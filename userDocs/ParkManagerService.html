@@ -1,253 +1,323 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-    <!--
+<!--
 <link rel="stylesheet" type="text/css" href="../css/issStyle1.css">
 <script type="text/javascript" src="../css/issStyle.js"></script>
 -->
 <style type="text/css">
-body
-{
-    margin-left:  30px;
-    margin-right: 30px;
-}
+    body {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
 
-P
-{
-    font-family: Tahoma;
-    font-size: 10pt;
-}
+    P {
+        font-family: Tahoma;
+        font-size: 10pt;
+    }
 
-a, a:visited, a:active, a:link, a:hover {
-    text-decoration: underline;
-    color: #545454;
-    background-color: transparent;
-	font-size: 93%;
-}
+    a, a:visited, a:active, a:link, a:hover {
+        text-decoration: underline;
+        color: #545454;
+        background-color: transparent;
+        font-size: 93%;
+    }
 
-a:hover {
-    background-color: #cccccc;
-}
+    a:hover {
+        background-color: #cccccc;
+    }
 
 
-hr {
-    clear: both;
-    height: 1px;
-    color: #242424;
-    background-color: transparent;
-}
+    hr {
+        clear: both;
+        height: 1px;
+        color: #242424;
+        background-color: transparent;
+    }
 
-h1, h2, h3 {
-    color: #242424;
-    clear: left;
-    font: 100% Tahoma, Helvetica, Arial, sans-serif;
-    margin-bottom: 0.5em;
-    padding-top: 0.5em;
-	border-radius: 10px;
-	padding: 5px;
-}
+    h1, h2, h3 {
+        color: #242424;
+        clear: left;
+        font: 100% Tahoma, Helvetica, Arial, sans-serif;
+        margin-bottom: 0.5em;
+        padding-top: 0.5em;
+        border-radius: 10px;
+        padding: 5px;
+    }
 
-top {
-	width: 100%;
-}
+    top {
+        width: 100%;
+    }
 
 
-#i {
-    color: #ff1010;
-}
-tt{
-	font-family: "Arial";
-    font-size: 90%;
-	color: #006600;
-}
-em{
-	font-family: "Arial";
-    font-size: 80%;
-	font-weight: bold;
-	border-style:solid;
-	border-color: #abe876;
-    color: #1632cc;
-}
-bc{
-	font-family: "Arial";
-	font-size: 90%;
-	font-weight: bold;
-    color: #990000;
-	background-color: #fcf8c7;
-}
-ks{
-	font-family: "Arial";
-	font-weight: bold;
-    color: #0000CD	;
-	font-size: 90%;
-}
-kc{
-	font-family: "Arial";
-	font-weight: bold;
-    color: #008000	;
-	font-size: 90%;
-}
-pre{
-	font-family: "Consolas";
-	font-size: 85%;
-	background-color: #f5f5f5;
-	border: 1.5px solid silver;
-	padding: 5px;
-}
-m{
-	font-family: "Helvetica";
-	line-height: 100%;
- 	font-size: 75%;
-}
-div.body{
-	 
-    font-size: 18px;
-}
-k{
-    color: #990000;
-	font-weight: bold;
-	font-size: 90%;
-}
-h1 {
-    font-size: 150%;
-    background-color: #b2c0ff;
-	padding: 10px;
-}
+    #i {
+        color: #ff1010;
+    }
 
-h2 {
-    background-color: #9ed8ff;
-    font-size: 130%;
-}
+    tt {
+        font-family: "Arial";
+        font-size: 90%;
+        color: #006600;
+    }
 
-h3 {
-	background-color: #e6ccff;
-    font-size: 100%;
-}
-h4 {
-    background-color: #ccffcc;
-    font-size: 100%;
-	width: 95%;
-	border-radius: 5px;
-	padding: 2px;
-}
-h5 {
-    background-color: #d5ffb0;
-    font-size: 100%;
+    em {
+        font-family: "Arial";
+        font-size: 80%;
+        font-weight: bold;
+        border-style: solid;
+        border-color: #abe876;
+        color: #1632cc;
+    }
 
-}
-div.req{
-	background-color: #d9ffb3;
-    font-size: 18px;
-	width: 700px;
-    border: 3px solid green;
-    padding: 15px;
-    margin: 10px;
-}
-div.remark{
-	background-color: #E3F2FD;
-    border: 1.5px solid #d5f2ed;
-    padding: 15px;
-    margin: 10px;
-	border-radius: 25px;
-}
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
+    bc {
+        font-family: "Arial";
+        font-size: 90%;
+        font-weight: bold;
+        color: #990000;
+        background-color: #fcf8c7;
+    }
 
-ol, ul, li {
-  margin: 0;
-  margin-left: 10px;
-  padding: 0;
-  padding-bottom: 5px;
-}
+    ks {
+        font-family: "Arial";
+        font-weight: bold;
+        color: #0000CD;
+        font-size: 90%;
+    }
 
-table, th, td {
-	border: 1px solid black;
-}
+    kc {
+        font-family: "Arial";
+        font-weight: bold;
+        color: #008000;
+        font-size: 90%;
+    }
 
-img {
-	border: 1.5px solid #d5f2ed
+    pre {
+        font-family: "Consolas";
+        font-size: 85%;
+        background-color: #f5f5f5;
+        border: 1.5px solid silver;
+        padding: 5px;
+    }
 
-}
+    m {
+        font-family: "Helvetica";
+        line-height: 100%;
+        font-size: 75%;
+    }
 
-a, a:visited, a:active, a:link, a:hover {
-    text-decoration: underline;
-    color: #545454;
-    background-color: transparent;
-}
+    div.body {
 
-div.wrapdesc{
-	width: 90%;
-	margin: auto;
-}
+        font-size: 18px;
+    }
 
-div.imagedesc{
-	width: 85%;
-	margin: auto;
-}
+    k {
+        color: #990000;
+        font-weight: bold;
+        font-size: 90%;
+    }
+
+    h1 {
+        font-size: 150%;
+        background-color: #b2c0ff;
+        padding: 10px;
+    }
+
+    h2 {
+        background-color: #9ed8ff;
+        font-size: 130%;
+    }
+
+    h3 {
+        background-color: #e6ccff;
+        font-size: 100%;
+    }
+
+    h4 {
+        background-color: #ccffcc;
+        font-size: 100%;
+        width: 95%;
+        border-radius: 5px;
+        padding: 2px;
+    }
+
+    h5 {
+        background-color: #d5ffb0;
+        font-size: 100%;
+
+    }
+
+    div.req {
+        background-color: #d9ffb3;
+        font-size: 18px;
+        width: 700px;
+        border: 3px solid green;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    div.remark {
+        background-color: #E3F2FD;
+        border: 1.5px solid #d5f2ed;
+        padding: 15px;
+        margin: 10px;
+        border-radius: 25px;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    ol, ul, li {
+        margin: 0;
+        margin-left: 10px;
+        padding: 0;
+        padding-bottom: 5px;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    img {
+        border: 1.5px solid #d5f2ed
+
+    }
+
+    a, a:visited, a:active, a:link, a:hover {
+        text-decoration: underline;
+        color: #545454;
+        background-color: transparent;
+    }
+
+    div.wrapdesc {
+        width: 90%;
+        margin: auto;
+    }
+
+    div.imagedesc {
+        width: 85%;
+        margin: auto;
+    }
 </style>
-    
+
 <head>
-   
-<title>TemplateToFill</title></head>
-    
+
+	<title>TemplateToFill</title></head>
+
 <body>
 <div id="top">
-<h1>LABORATORIO DI INGEGNERIA DEI SISTEMI SOFTWARE <font size="5"></font> </h1>
-</div>  
-
-<div class="body"> 
-<h2>Introduction</h2>
- 
- 
-<h2>Requirements</h2>
-
- 
-<div class="remark">
-Copy here the EXACT text fiven by the customer.
+	<h1>LABORATORIO DI INGEGNERIA DEI SISTEMI SOFTWARE <font size="5"></font></h1>
 </div>
 
- 
+<div class="body">
+	<h2>Introduction</h2>
 
-<h2>Requirement analysis</h2>
- 
 
+	<h2>Requirements</h2>
+
+
+	<div class="remark">
+		The document written by the customer with the requirements can be found <a href="TFBO21ParkingISS.pdf">here</a>.
+	</div>
+
+
+	<h2>Requirement analysis</h2>
+	<div class="remark">
+		<h3>Dictionary</h3>
+		<b>Nouns</b>
+		<ul>
+			<li><b>ParkManagerService</b>: The software system which will implement the required automation functions;</li>
+			<li><b>DDR robot</b>: Differential/Direct? Drive Robot. Has the form of a square of side length RD;</li>
+			<li><b>transport trolley</b>: A DDR robot which is used to move cars
+				from the INDOOR(?INDOOR-area?) to the selected parking-slot;
+			</li>
+			<li><b>home</b>: Starting position for the robot, located in the top-left corner of the environment. When the
+				robot completes a request, and there are no further instruction, it will return in this position;</li>
+			<li><b>parking-area</b>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
+				OUTDOOR, OUTDOOR-area, parking-slots, thermometer and a fan;</li>
+			<li><b>INDOOR</b>: Cars use this gate to enter the parking-area;</li>
+			<li><b>INDOOR-area</b>: Cars are left here by the drivers and the transport trolley picks them up here. It is
+				located inside the parking area;</li>
+			<li><b>weightsensor</b>: Sensor to measure the weight of the car, located in the INDOOR-area;</li>
+			<li><b>OUTDOOR</b>: Cars uses this gate to exit from the parking-area;</li>
+			<li><b>OUTDOOR-area</b>: Cars are left here by transport trolley and drivers picks them up here.
+				It is located inside the parking area;</li>
+			<li><b>outsonar</b>: Controls the presence of cars in the outdoor area. [Guaranteed not to fire false positive or negatives];</li>
+			<li><b>parking-slots</b>: Dedicated slots inside the parking area where cars are left by the transport
+				trolley. There are 6 parking-slots;</li>
+			<li><b>thermometer</b>: Sensor used to measure the temperature inside the parking-area;</li>
+			<li><b>fan</b>: A fan used to reduce the temperature inside the parking-area. It can be manually activated
+				by the parking manager, or it can activate automatically;</li>
+			<li><b>map</b>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
+			<li><b>fixed obstacles</b>: </li>
+			<li><b>parking-manager</b>: Person in charge of the parking-area, who supervises the state and handles
+				critical situations;</li>
+			<li><b>client</b>:</li>
+			<li><b>ParkServiceGUI</b>: GUI for parking clients to leave and pick up cars. Situated near the indoor and
+				outdoor area;</li>
+			<li><b>ParkServiceStatusGUI</b>: GUI for the parking-manager to manage some aspects of the parking area;</li>
+			<li><b>TOKENID</b>: sequence of characters. The characters should be generated in a manner that:
+				<ol>
+					<li>Two cars cannot have the same TOKENID while they are in the parking area</li>
+					<li>It is impossible to guess the generated ID (cryptographically secure random)</li>
+					<li>The generated ID must have a significative number of character</li>
+				</ol></li>
+			<li><b>Alarm</b> (to the parking manager): notification for the parking manager to signal if the OUTDOOR-area
+				is not freed within DTFREE interval of time;</li>
+			<li><b>Status</b>:</li>
+		</ul>
+		<b>Verbs</b>
+
+	</div>
+
+	<h2>Problem analysis</h2>
+	<div class="remark">
+		How to communicate with weight sensor, outsonar, fans and parking slots?
+		Link guide to control robot
+		Temperature and weight are measured and displayed respectively in Celsius and Kilograms.
+
+	</div>
+
+	<h2>Test plans</h2>
+	<div class="remark">
+
+	</div>
+
+	<h2>Project</h2>
+	<div class="remark">
+
+	</div>
+
+	<h2>Testing</h2>
+	<div class="remark">
+
+	</div>
+
+	<h2>Deployment</h2>
+	<div class="remark">
+
+	</div>
+
+	<h2>Maintenance</h2>
+	<div class="remark">
+
+	</div>
+	<!-- USEFUL
+	<table style="width:100%" border="1">
+	<tr>
+	<td style="width:50%">
+	</td>
+	<td></td>
+	</tr>
+	</table>
+	-->
+
+	<br/><br/>
 </div>
-
-<h2>Problem analysis</h2>
- 
-
-<h2>Test plans</h2> 
-
-
-<h2>Project</h2> 
- 
-</div>
-
-<h2>Testing</h2> 
- 
-
-<h2>Deployment</h2> 
-
- 
-<h2>Maintenance</h2> 
- 
-<!-- USEFUL
-<table style="width:100%" border="1">
-<tr>
-<td style="width:50%">
-</td>
-<td></td>
-</tr>
-</table>
--->
-	      	
-<br/><br/> 	
-</div>  
 
 <div style="background-color:rgba(86, 56, 253, 0.9); width:60%;text-align:left;color:white">
-By studentName email: student@studio.unibo.it  
-<img src="./img/emiglio.png" alt="mbot" width="15%" height="15%">
-</div> 
+	By Alessandro Musarella email: alessandro.musarella@studio.unibo.it <br>
+	By Giulio Tripi email: giulio.tripi@studio.unibo.it
+</div>
 </body>
 </html>
