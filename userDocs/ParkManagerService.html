@@ -112,7 +112,6 @@
     k {
         color: #990000;
         font-weight: bold;
-        font-size: 90%;
     }
 
     h1 {
@@ -214,8 +213,6 @@
 
 
 	<h2>Requirements</h2>
-
-
 	<div class="remark">
 		The document written by the customer with the requirements can be found <a href="TFBO21ParkingISS.pdf">here</a>.
 	</div>
@@ -224,49 +221,71 @@
 	<h2>Requirement analysis</h2>
 	<div class="remark">
 		<h3>Dictionary</h3>
-		<b>Nouns</b>
+		<h4>Nouns</h4>
 		<ul>
-			<li><b>ParkManagerService</b>: The software system which will implement the required automation functions;</li>
-			<li><b>DDR robot</b>: Differential/Direct? Drive Robot. Has the form of a square of side length RD;</li>
-			<li><b>transport trolley</b>: A DDR robot which is used to move cars
+			<li><ks>ParkManagerService</ks>: The software system which will implement the required automation functions;</li>
+			<li><ks>DDR robot</ks>: Differential/Direct? Drive Robot. Has the form of a square of side length RD;</li>
+			<li><ks>transport trolley</ks>: A DDR robot which is used to move cars
 				from the INDOOR(?INDOOR-area?) to the selected parking-slot;
 			</li>
-			<li><b>home</b>: Starting position for the robot, located in the top-left corner of the environment. When the
+			<li><ks>home</ks>: Starting position for the robot, located in the top-left corner of the environment. When the
 				robot completes a request, and there are no further instruction, it will return in this position;</li>
-			<li><b>parking-area</b>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
+			<li><ks>parking-area</ks>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
 				OUTDOOR, OUTDOOR-area, parking-slots, thermometer and a fan;</li>
-			<li><b>INDOOR</b>: Cars use this gate to enter the parking-area;</li>
-			<li><b>INDOOR-area</b>: Cars are left here by the drivers and the transport trolley picks them up here. It is
+			<li><ks>INDOOR</ks>: Cars use this gate to enter the parking-area;</li>
+			<li><ks>INDOOR-area</ks>: Cars are left here by the drivers and the transport trolley picks them up here. It is
 				located inside the parking area;</li>
-			<li><b>weightsensor</b>: Sensor to measure the weight of the car, located in the INDOOR-area;</li>
-			<li><b>OUTDOOR</b>: Cars uses this gate to exit from the parking-area;</li>
-			<li><b>OUTDOOR-area</b>: Cars are left here by transport trolley and drivers picks them up here.
+			<li><ks>weightsensor</ks>: Sensor to measure the weight of the car, located in the INDOOR-area;</li>
+			<li><ks>OUTDOOR</ks>: Cars uses this gate to exit from the parking-area;</li>
+			<li><ks>OUTDOOR-area</ks>: Cars are left here by transport trolley and drivers picks them up here.
 				It is located inside the parking area;</li>
-			<li><b>outsonar</b>: Controls the presence of cars in the outdoor area. [Guaranteed not to fire false positive or negatives];</li>
-			<li><b>parking-slots</b>: Dedicated slots inside the parking area where cars are left by the transport
+			<li><ks>outsonar</ks>: Controls the presence of cars in the outdoor area. [Guaranteed not to fire false positive or negatives];</li>
+			<li><ks>parking-slots</ks>: Dedicated slots inside the parking area where cars are left by the transport
 				trolley. There are 6 parking-slots;</li>
-			<li><b>thermometer</b>: Sensor used to measure the temperature inside the parking-area;</li>
-			<li><b>fan</b>: A fan used to reduce the temperature inside the parking-area. It can be manually activated
+			<li><ks>thermometer</ks>: Sensor used to measure the temperature inside the parking-area;</li>
+			<li><ks>fan</ks>: A fan used to reduce the temperature inside the parking-area. It can be manually activated
 				by the parking manager, or it can activate automatically;</li>
-			<li><b>map</b>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
-			<li><b>fixed obstacles</b>: </li>
-			<li><b>parking-manager</b>: Person in charge of the parking-area, who supervises the state and handles
+			<li><ks>map</ks>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
+			<li><ks>fixed obstacles</ks>: Immovable objects that the robot cannot traverse;</li>
+			<li><ks>parking-manager</ks>: Person in charge of the parking-area, who supervises the state and handles
 				critical situations;</li>
-			<li><b>client</b>:</li>
-			<li><b>ParkServiceGUI</b>: GUI for parking clients to leave and pick up cars. Situated near the indoor and
+			<li><ks>client</ks>: Person using services of the parking-area. In particular, he will leave and pickup the car;</li>
+			<li><ks>ParkServiceGUI</ks>: GUI for parking clients to leave and pick up cars. Situated near the indoor and
 				outdoor area;</li>
-			<li><b>ParkServiceStatusGUI</b>: GUI for the parking-manager to manage some aspects of the parking area;</li>
-			<li><b>TOKENID</b>: sequence of characters. The characters should be generated in a manner that:
-				<ol>
+			<li><ks>ParkServiceStatusGUI</ks>: GUI for the parking-manager to manage some aspects of the parking area;</li>
+			<li><ks>SLOTNUM</ks>: id of the parking slot given to the client, representing the location where the car will
+				be placed by transport trolley. If equal to 0, no parking slots are available</li>
+			<li><ks>TOKENID</ks>: sequence of characters. The characters should be generated in a manner that:
+				<ul>
 					<li>Two cars cannot have the same TOKENID while they are in the parking area</li>
 					<li>It is impossible to guess the generated ID (cryptographically secure random)</li>
 					<li>The generated ID must have a significative number of character</li>
-				</ol></li>
-			<li><b>Alarm</b> (to the parking manager): notification for the parking manager to signal if the OUTDOOR-area
+				</ul></li>
+			<li><ks>Alarm</ks> (to the parking manager): notification for the parking manager to signal if the OUTDOOR-area
 				is not freed within DTFREE interval of time;</li>
-			<li><b>Status</b>:</li>
+			<li><ks>current state</ks>: Collection of the following information:
+				<ul>
+					<li>current temperature inside the parking-area;</li>
+					<li>current state of the fan (<k>on</k> or <k>off</k>);</li>
+					<li>current state of the transport trolley (<k>idle</k>, <k>working</k> or <k>stopped</k>);</li>
+				</ul></li>
 		</ul>
-		<b>Verbs</b>
+		<h4>Verbs</h4>
+		<ul>
+			<li><ks>leave the car</ks>: after receiving the SLOTNUM, the client leaves the car in the INDOOR-area and
+				presses the CARENTER button on the ParkServiceGUI. He will then receive the unique TOKENID;</li>
+			<li><ks>pick up the car</ks>: the client uses the ParkServiceGUI to request the pick up, by sending the TOKENID
+				previously received. After the car is moved to the OUTDOOR-area by the robot, the client takes the car and
+				frees the area within DTFREE interval of time;</li>
+			<li><ks>start the fan</ks>: when the current temperature inside the parking-area exceeds TMAX, either the
+				parking-manager starts manually the fan from the ParkServiceStatusGUI, or the fan starts automatically;</li>
+			<li><ks>stop the fan</ks>: when the current temperature goes below TMAX, either the parking-manager stops
+				manually the fan from the ParkServiceStatusGUI, or the fan stops automatically;</li>
+			<li><ks>stop the robot</ks>: when the current temperature inside the parking-area exceeds TMAX, the
+				parking-manager stops the robot, blocking any successive move until he starts the robot again;</li>
+			<li><ks>start the robot</ks>: after the parking-manager stops the robot, it remains stopped until restarted
+				by the parking-manager;</li>
+		</ul>
 
 	</div>
 

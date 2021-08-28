@@ -11,7 +11,7 @@ nell'INDOOR-area) oppure robot e auto occupano due caselle distinte
 - doppia definizione per DDR robot e transport trolley?
 - ParkServiceGUI solo una oppure due in corrispondenza di indoor e outdoor?
 - TOKENID deve fungere anche da password?
-- l'allarme al parking manager cosa si intende?
+- l'allarme al parking manager cosa si intende? cosa deve fare dopo il manager?
 
 
 
