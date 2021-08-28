@@ -291,10 +291,20 @@
 
 	<h2>Problem analysis</h2>
 	<div class="remark">
-		How to communicate with weight sensor, outsonar, fans and parking slots?
-		Link guide to control robot
-		Temperature and weight are measured and displayed respectively in Celsius and Kilograms.
-
+		<h4>Devices</h4>
+		A possible abstraction gap is the communication with all the different devices in the parking area:
+		<ul>
+			<li><ks>weight sensor</ks>: </li>
+			<li><ks>outsonar</ks>: </li>
+			<li><ks>fan</ks>: </li>
+			<li><ks>transport trolley</ks>: The customer provides a set of utilities to interact with the robot, both in
+				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.qak21.basicrobot">qak</a> and
+				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.kotlinSupports">kotlin</a>.<br>
+				In addition, is available an
+				<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a> to communicate with the robot independently
+				of the libraries provided.</li>
+		</ul>
+		<h4>User interaction</h4>
 	</div>
 
 	<h2>Test plans</h2>
