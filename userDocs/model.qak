@@ -1,0 +1,429 @@
+/*
+ *  ParkManagerService
+ *  Copyright (C) 2021 Giulio Tripi <giulio.tripi@studio.unibo.it>, Alessandro Musarella <alessandro.musarella@studio.unibo.it>
+
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+
+System /*-trace*/ -msglog  parkingservice
+
+
+Request  getTemp	: getTemp(X)
+Reply    temp		: temp(T)
+
+// SENSORS & FAN
+
+Request  getSonar	: getSonar(X)
+Reply    sonarState	: sonarState(STATE)
+
+Event outdoorAreaNowFree : outdoorAreaNowFree(X)
+
+Request  getWeight		: getWeight(X)
+Reply    weightState	: weightState(WEIGHT)
+
+Request  getFanState	: getFanState(X)
+Reply    fanState		: fanState(STATE)
+
+Dispatch setFanOn		: setFanOn(X)
+Dispatch setFanOff		: setFanOff(X)
+
+//TIMER
+
+Dispatch startTimer		: startTimer(_)
+Dispatch stopTimer		: stopTimer(_)
+Event	 timeout		: timeout(_)
+
+// ROBOT
+
+Request  getRobotStatus	: getRobotStatus(X)
+Reply    robotStatus	: robotStatus(STATUS)
+
+Dispatch setRobotStatus	: robotStatus(STATUS)
+
+//Request so this way I know when robot finished task (I could have used two dispatch instead, but this way
+//sounds more linear in a model)
+Request  moveToIn		: moveToIn(X)
+Reply    moveDone		: moveDone(MOVE, RESULT)
+
+Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
+
+Request  backHome		: backHome(X)
+
+Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
+
+Request  moveToOut		: moveToOut(X)
+
+// GUI CLIENT
+
+Request  enterRequest	: enterRequest(X)
+Reply    slotNum		: slotNum(SLOTNUM)
+
+Request  carEnter		: carEnter(X)
+Reply    token			: token(TOKENID)
+
+Dispatch canEnter		: canEnter(X)
+
+
+Request  pickUpRequest	: pickUpRequest(TOKENID)
+Reply    pickUpReply	: pickUpReply(STATUS)
+
+// GUI MANAGER
+
+
+
+// CONTEXTS
+
+Context ctxservice ip [ host= "localhost" port= 8050 ]
+Context ctxclient ip [ host= "localhost" port= 8051 ]
+Context ctxmanager ip [ host= "localhost" port= 8052 ]
+Context ctxrobot ip [ host= "localhost" port= 8053 ]
+
+
+QActor service context ctxservice {
+	[# var Occupati = BooleanArray(6) { false }
+		var SLOTNUM: Int = 0
+		var TOKENID: String = ""
+	#]
+	State s0 initial {
+		println("Service init")
+	}
+	Goto idle
+	State idle {
+		
+	}
+	Transition t0
+		whenRequest enterRequest -> handleEnterRequest
+		whenRequest carEnter -> handleCarEnter
+		whenRequest pickUpRequest -> handlePickUp
+	
+	State handleEnterRequest {
+		//TOASK: cosa succede qui se il sensore di peso dice che c'è una macchina sopra?
+		
+		//qui trovo il numero del primo slot disponibile e restituisco il risultato
+		[#
+			SLOTNUM = -1
+			for(i in 0..5) {
+				if(Occupati[i] == false) {
+					SLOTNUM=i;
+					break;
+				}
+			}
+			SLOTNUM += 1
+		#]
+		replyTo enterRequest with slotNum : slotNum($SLOTNUM)
+		delay 1000
+	}
+	Goto idle
+	State handleCarEnter {
+		//TOASK: qui all'inizio devo controllare che il sensore di peso rilevi peso?
+		[#
+			SLOTNUM = -1
+			for(i in 0..5) {
+				if(Occupati[i] == false) {
+					SLOTNUM=i;
+					break;
+				}
+			}
+			if(SLOTNUM>=0)
+				Occupati[SLOTNUM] = true
+			SLOTNUM += 1
+			TOKENID = "t" + SLOTNUM
+		#]
+		println("[SERVICE] Generated TOKENID: $TOKENID")
+		request robot -m moveToIn : moveToIn(X)
+		
+	}
+	Transition t1
+		whenReply moveDone -> handleCarEnter1
+	State handleCarEnter1 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+			replyTo carEnter with token : token($TOKENID)
+			request robot -m moveToSlotIn : moveToSlotIn($SLOTNUM)
+		}
+	}
+	Transition t2
+		whenReply moveDone -> handleCarEnter2
+	State handleCarEnter2 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+					
+			//if there are not other requests
+			request robot -m backHome : backHome(X)
+				
+		}
+	}
+	Transition t2b
+		whenReply moveDone -> handleCarEnter3
+	State handleCarEnter3 {
+		println("[SERVICE] carEnterRequest finished")
+	}
+	Goto idle
+	/*Goto handleCarEnterKo if [# SLOTNUM == 0 #]
+	else handleCarEnterOk //qui potrei dire else if?
+	
+	State handleCarEnterKo {
+		
+	}
+	State handleCarEnterOk {
+		
+	}*/
+	State handlePickUp {
+		onMsg(pickUpRequest : pickUpRequest(TOKENID)) {
+			[#
+				SLOTNUM = payloadArg(0)[1].toInt()
+			#]
+			request robot -m moveToSlotOut : moveToSlotOut($SLOTNUM)
+			
+		}
+	}
+	Transition t3
+		whenReply moveDone -> handlePickUp1
+	State handlePickUp1 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+				request robot -m moveToOut : moveToOut(X)
+				
+			}
+	}
+	Transition t4
+		whenReply moveDone -> handlePickUp2
+	State handlePickUp2 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+			
+			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
+			
+			forward client -m canEnter : canEnter(X)
+			
+			forward dtfree -m startTimer : startTimer(X)
+			//if there are not other requests
+			request robot -m backHome : backHome(X)
+		}
+	}
+	Transition t5
+		whenReply moveDone -> handlePickUp3
+	State handlePickUp3 {
+		println("[SERVICE] pickUpRequest finished")
+	}
+	Goto idle
+}
+
+// ----------------------------------
+//		ACTORS FOR GUIs
+// ----------------------------------
+
+QActor client context ctxservice { // TODO: ctxclient
+	State s0 initial {
+		println("clientGUI init")
+		delay 5000
+		request service -m enterRequest : enterRequest(_)
+	}
+	Transition t1
+		whenReply slotNum -> printslotnum
+	State printslotnum {
+		println("[CLIENT] receiving")
+		onMsg(slotNum: slotNum(SLOTNUM)) {
+			println("[CLIENT] Received ${payloadArg(0)}")
+		}
+		println("[CLIENT] received")
+		request service -m carEnter : carEnter(_)
+	}
+	Transition t2
+		whenReply token -> printtoken
+	State printtoken {
+		onMsg(token: token(TOKENID)) {
+			println("[CLIENT] Received ${payloadArg(0)}")
+		}
+	}
+	Goto trip
+	State trip {
+		println("[CLIENT] Going out for a trip")
+		delay 15000
+		println("[CLIENT] Trying to pick up my car")
+		request service -m pickUpRequest : pickUpRequest(t0)
+	}
+	Transition t3
+		whenReply pickUpReply -> pickUp
+	State pickUp {
+		
+		println("[CLIENT] CAR PICKED UP")
+	}
+	Transition t4
+		whenMsg canEnter -> canEnter
+	State canEnter {
+		println("[CLIENT] There is a new free parking slot")
+	}
+}
+
+QActor manager context ctxservice { // TODO: ctxmanager
+	State s0 initial {
+		println("managerGUI init")
+	}
+	Transition t0
+		whenEvent timeout -> timeout
+	
+	State timeout {
+		println("TIMEOUT")
+	}
+}
+
+// ----------------------------------
+//		ACTORS FOR ROBOT
+// ----------------------------------
+
+QActor robot context ctxservice { //TODO: ctxrobot
+	State s0 initial {
+		
+	}
+	Transition t0
+		whenRequest moveToIn -> moveToIn
+		whenRequest moveToSlotIn -> moveToSlotIn
+		whenRequest backHome -> backHome
+		whenRequest moveToSlotOut -> moveToSlotOut
+		whenRequest moveToOut -> moveToOut
+	State moveToIn {
+		delay 6000
+		println("[ROBOT] moveToIn1")
+		replyTo moveToIn with moveDone : moveDone(moveToIn, 1)
+	}
+	Goto s0
+	State moveToSlotIn {
+		delay 6000
+		println("[ROBOT] moveToSlotIn2")
+		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
+	}
+	Goto s0
+	State backHome {
+		delay 6000
+		println("[ROBOT] backHome3-6")
+		replyTo backHome with moveDone : moveDone(backHome, 1)
+	}
+	Goto s0
+	State moveToSlotOut {
+		delay 6000
+		println("[ROBOT] moveToSlotOut4")
+		replyTo moveToSlotOut with moveDone : moveDone(moveToSlotOut, 1)
+	}
+	Goto s0
+	State moveToOut {
+		delay 6000
+		println("[ROBOT] moveToOut5")
+		replyTo moveToOut with moveDone : moveDone(moveToOut, 1)
+	}
+	Goto s0
+}
+
+// ----------------------------------
+//		ACTORS FOR TIMEOUT
+// ----------------------------------
+
+QActor dtfree context ctxservice {
+	State idle initial {
+		
+	}
+	Transition t0
+		whenMsg startTimer -> timing
+	State timing {
+		
+	}
+	//TODO: decidere come gestire la liberazione: il timer controlla in continuazione
+	//e quando si libera manda un evento o il sensore (meglio)?
+	Transition t1 whenTime 60000 -> timeout
+		whenMsg stopTimer -> idle
+		whenEvent outdoorAreaNowFree -> idle
+	State timeout {
+		emit timeout : timeout(_)
+	}
+	Goto idle
+}
+
+// ----------------------------------
+//		ACTORS FOR SENSORS & FAN
+// ----------------------------------
+
+QActor thermometer context ctxservice {
+	State s0 initial {    
+  		 println("Thermometer init")
+	}
+	Transition t0 
+		whenRequest getTemp -> handleRequest
+  	
+	State handleRequest {
+		replyTo getTemp with temp : temp(20) // TODO: random temperature
+   	}
+	Transition t1
+		whenRequest getTemp -> handleRequest
+}
+
+QActor sonar context ctxservice {
+	State s0 initial {    
+  		 println("Sonar init")
+	}
+	Transition t0 
+		whenRequest getSonar -> handleRequest
+  	
+	State handleRequest {
+		replyTo getSonar with sonarState : sonarState(0) // TODO: random value
+   	}
+	Transition t1
+		whenRequest getSonar -> handleRequest
+}
+
+QActor fan context ctxservice {
+	[# var Stato = 0 #]  //State is a reserved keyword
+	State s0 initial {    
+  		 println("Fan init")
+	}
+	Goto off
+  	State off {
+		println("Fan off")
+		[# Stato = 0 #]
+		discardMsg On
+	}
+	Transition t1 whenMsg setFanOn -> on
+		//whenMsg disableAlarm -> disabled
+		whenRequest getFanState -> handleGetFanState
+	//se qui mi arriva un disable devo scartare il messaggio (o tornare a disabled, non accumularlo, altrimenti poi torna qui)
+	State on {
+		println("Fan on")
+		[# Stato = 1 #]
+		discardMsg On //sto scartando solo i messaggi != disableAlarm e non quelli getAlarmState che magari mi arrivano contemporaneamente?
+	}
+	Transition t2 whenMsg setFanOff -> off
+		whenRequest getFanState -> handleGetFanState
+		//whenEvent onTemperature -> disabled
+	
+	State handleGetFanState {
+		printCurrentMessage
+		onMsg(getFanState : getFanState(_)) {
+			println("Fan getStatus")
+			replyTo getFanState with fanState : fanState( $Stato )
+		}
+	}
+	Goto off if [# Stato == 0 #]
+	else on //qui potrei dire else if?
+}
+
+QActor weight context ctxservice {
+	State s0 initial {    
+  		 println("Weight init")
+	}
+	Transition t0 
+		whenRequest getWeight -> handleRequest
+  	
+	State handleRequest {
+		replyTo getWeight with weightState: weightState(30) // TODO: random weight
+   	}
+	Transition t1
+		whenRequest getWeight -> handleRequest
+}
+
