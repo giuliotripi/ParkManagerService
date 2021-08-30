@@ -11,12 +11,16 @@ nell'INDOOR-area) oppure robot e auto occupano due caselle distinte
 - doppia definizione per DDR robot e transport trolley?
 - ParkServiceGUI solo una oppure due in corrispondenza di indoor e outdoor?
 - TOKENID deve fungere anche da password?
-- l'allarme al parking manager cosa si intende? cosa deve fare dopo il manager?
+- L'allarme al parking manager cosa si intende? cosa deve fare dopo il manager?
+- se un utente vuole accedere al parcheggio ma il trolley è stato bloccato aspetta semplicemente di più
+o devo gestirlo in qualche modo particolare?
+- La ventola quindi la attiviamo automaticamente?
+- Il current state include anche altre informazioni tipo la posizione del trolley, i parking slot liberi, etc? Da 
+aggiungere in dizionario
 
-
-
-
-
+### User stories aggiunte?
+- Se non ci sono posti liberi, il cliente in fase di leave cosa fa?
+- Se il parking manager ferma il robot, il cliente che vuole eseguire pickup o leave deve essere avvisato?
 
 #### Più avanti
 - Cosa vuol dire stop del trolley? Immediato?

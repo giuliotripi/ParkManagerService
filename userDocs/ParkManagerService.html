@@ -297,6 +297,7 @@
 			<li><ks>weight sensor</ks>: </li>
 			<li><ks>outsonar</ks>: </li>
 			<li><ks>fan</ks>: </li>
+			<li><ks>thermometer</ks>: </li>
 			<li><ks>transport trolley</ks>: The customer provides a set of utilities to interact with the robot, both in
 				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.qak21.basicrobot">qak</a> and
 				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.kotlinSupports">kotlin</a>.<br>
@@ -304,12 +305,59 @@
 				<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a> to communicate with the robot independently
 				of the libraries provided.</li>
 		</ul>
-		<h4>User interaction</h4>
+
+		<h4>Map of the parking-area</h4>
+		The customer provides a
+		<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.kotlinSupports/app/src/main/kotlin/mapRoomKotlin/mapUtil.kt">library</a>
+		in Kotlin to represent the map of the parking-area.
+
+		TODO: insert here map as grid with indications of all areas
+
+		<!-- <h4>User interaction</h4> Da finire con eventuali altre user story -->
+		<h4>Logical architecture</h4>
+		The image above represents the logical architecture of the system.
+		<br>
+		<img style="max-width: 100%" src="img/logical-architecture.png" alt="Logical architecture">
+		<br>
+		It is also available an executable model of the system written in <a href="">qak language</a>.
 	</div>
 
 	<h2>Test plans</h2>
 	<div class="remark">
 
+	</div>
+
+	<h2>Work plan</h2>
+	<div class="remark">
+		We can assess the time needed to implement all the feature discussed above as follows:
+		<ol>
+			<li>Communication with devices (total 2 days)
+				<ol>
+					<li>Sonar: 3h</li>
+					<li>Fan: 1h</li>
+					<li>Thermometer: 2h</li>
+					<li>Weight sensor: 2h</li>
+					<li>Transport trolley: 1 day</li>
+				</ol></li>
+			<li>
+				ParkManagerService core: 2 days
+			</li>
+			<li>API endpoints for 2 GUI: 3h</li>
+			<li>ParkServiceGUI (total 10h)
+			<ol>
+				<li>Design (including chose of theme): 3h</li>
+				<li>Realization (only client side): 7h</li>
+			</ol>
+			</li>
+			<li>ParkServiceStatusGUI (total 7.5h)
+			<ol>
+				<li>Design (same theme of above): 1.5h</li>
+				<li>Realization (only client side): 6h</li>
+			</ol>
+			</li>
+		</ol>
+		One day of work is equal to 8 working hours.<br>
+		Total work estimate: 6 days and 4.5 hours.
 	</div>
 
 	<h2>Project</h2>
@@ -345,8 +393,9 @@
 </div>
 
 <div style="background-color:rgba(86, 56, 253, 0.9); width:60%;text-align:left;color:white">
-	By Alessandro Musarella email: alessandro.musarella@studio.unibo.it <br>
-	By Giulio Tripi email: giulio.tripi@studio.unibo.it
+	By Alessandro Musarella <a style="color: white" href="mailto:alessandro.musarella@studio.unibo.it">alessandro.musarella@studio.unibo.it</a><br>
+	By Giulio Tripi <a style="color: white" href="mailto:giulio.tripi@studio.unibo.it">giulio.tripi@studio.unibo.it</a><br>
+	GitHub: <a style="color: white" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a>
 </div>
 </body>
 </html>
