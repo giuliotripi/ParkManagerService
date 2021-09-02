@@ -28,6 +28,8 @@ Reply    temp		: temp(T)
 Request  getSonar	: getSonar(X)
 Reply    sonarState	: sonarState(STATE)
 
+Event outdoorAreaNowFree : outdoorAreaNowFree(X)
+
 Request  getWeight		: getWeight(X)
 Reply    weightState	: weightState(WEIGHT)
 
@@ -90,7 +92,10 @@ Context ctxrobot ip [ host= "localhost" port= 8053 ]
 
 
 QActor service context ctxservice {
-	[# var Occupati = BooleanArray(6) { false } #]
+	[# var Occupati = BooleanArray(6) { false }
+		var SLOTNUM: Int = 0
+		var TOKENID: String = ""
+	#]
 	State s0 initial {
 		println("Service init")
 	}
@@ -108,13 +113,14 @@ QActor service context ctxservice {
 		
 		//qui trovo il numero del primo slot disponibile e restituisco il risultato
 		[#
-			var SLOTNUM = 0
-			for(i in 0..6) {
+			SLOTNUM = -1
+			for(i in 0..5) {
 				if(Occupati[i] == false) {
 					SLOTNUM=i;
 					break;
 				}
-			} 
+			}
+			SLOTNUM += 1
 		#]
 		replyTo enterRequest with slotNum : slotNum($SLOTNUM)
 		delay 1000
@@ -122,12 +128,91 @@ QActor service context ctxservice {
 	Goto idle
 	State handleCarEnter {
 		//TOASK: qui all'inizio devo controllare che il sensore di peso rilevi peso?
-		
+		[#
+			SLOTNUM = -1
+			for(i in 0..5) {
+				if(Occupati[i] == false) {
+					SLOTNUM=i;
+					break;
+				}
+			}
+			if(SLOTNUM>=0)
+				Occupati[SLOTNUM] = true
+			SLOTNUM += 1
+			TOKENID = "t" + SLOTNUM
+		#]
+		println("[SERVICE] Generated TOKENID: $TOKENID")
+		request robot -m moveToIn : moveToIn(X)
 		
 	}
+	Transition t1
+		whenReply moveDone -> handleCarEnter1
+	State handleCarEnter1 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+			replyTo carEnter with token : token($TOKENID)
+			request robot -m moveToSlotIn : moveToSlotIn($SLOTNUM)
+		}
+	}
+	Transition t2
+		whenReply moveDone -> handleCarEnter2
+	State handleCarEnter2 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+					
+			//if there are not other requests
+			request robot -m backHome : backHome(X)
+				
+		}
+	}
+	Transition t2b
+		whenReply moveDone -> handleCarEnter3
+	State handleCarEnter3 {
+		println("[SERVICE] carEnterRequest finished")
+	}
+	Goto idle
+	/*Goto handleCarEnterKo if [# SLOTNUM == 0 #]
+	else handleCarEnterOk //qui potrei dire else if?
 	
-	State handlePickUp {
+	State handleCarEnterKo {
 		
+	}
+	State handleCarEnterOk {
+		
+	}*/
+	State handlePickUp {
+		onMsg(pickUpRequest : pickUpRequest(TOKENID)) {
+			[#
+				SLOTNUM = payloadArg(0)[1].toInt()
+			#]
+			request robot -m moveToSlotOut : moveToSlotOut($SLOTNUM)
+			
+		}
+	}
+	Transition t3
+		whenReply moveDone -> handlePickUp1
+	State handlePickUp1 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+				request robot -m moveToOut : moveToOut(X)
+				
+			}
+	}
+	Transition t4
+		whenReply moveDone -> handlePickUp2
+	State handlePickUp2 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+			
+			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
+			
+			forward client -m canEnter : canEnter(X)
+			
+			forward dtfree -m startTimer : startTimer(X)
+			//if there are not other requests
+			request robot -m backHome : backHome(X)
+		}
+	}
+	Transition t5
+		whenReply moveDone -> handlePickUp3
+	State handlePickUp3 {
+		println("[SERVICE] pickUpRequest finished")
 	}
 	Goto idle
 }
@@ -145,19 +230,96 @@ QActor client context ctxservice { // TODO: ctxclient
 	Transition t1
 		whenReply slotNum -> printslotnum
 	State printslotnum {
-		println("receiving")
+		println("[CLIENT] receiving")
 		onMsg(slotNum: slotNum(SLOTNUM)) {
-			println("Received ${payloadArg(0)}")
+			println("[CLIENT] Received ${payloadArg(0)}")
 		}
-		println("received")
+		println("[CLIENT] received")
+		request service -m carEnter : carEnter(_)
 	}
-	
+	Transition t2
+		whenReply token -> printtoken
+	State printtoken {
+		onMsg(token: token(TOKENID)) {
+			println("[CLIENT] Received ${payloadArg(0)}")
+		}
+	}
+	Goto trip
+	State trip {
+		println("[CLIENT] Going out for a trip")
+		delay 15000
+		println("[CLIENT] Trying to pick up my car")
+		request service -m pickUpRequest : pickUpRequest(t0)
+	}
+	Transition t3
+		whenReply pickUpReply -> pickUp
+	State pickUp {
+		
+		println("[CLIENT] CAR PICKED UP")
+	}
+	Transition t4
+		whenMsg canEnter -> canEnter
+	State canEnter {
+		println("[CLIENT] There is a new free parking slot")
+	}
 }
 
 QActor manager context ctxservice { // TODO: ctxmanager
 	State s0 initial {
 		println("managerGUI init")
 	}
+	Transition t0
+		whenEvent timeout -> timeout
+	
+	State timeout {
+		println("TIMEOUT")
+	}
+}
+
+// ----------------------------------
+//		ACTORS FOR ROBOT
+// ----------------------------------
+
+QActor robot context ctxservice { //TODO: ctxrobot
+	State s0 initial {
+		
+	}
+	Transition t0
+		whenRequest moveToIn -> moveToIn
+		whenRequest moveToSlotIn -> moveToSlotIn
+		whenRequest backHome -> backHome
+		whenRequest moveToSlotOut -> moveToSlotOut
+		whenRequest moveToOut -> moveToOut
+	State moveToIn {
+		delay 6000
+		println("[ROBOT] moveToIn1")
+		replyTo moveToIn with moveDone : moveDone(moveToIn, 1)
+	}
+	Goto s0
+	State moveToSlotIn {
+		delay 6000
+		println("[ROBOT] moveToSlotIn2")
+		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
+	}
+	Goto s0
+	State backHome {
+		delay 6000
+		println("[ROBOT] backHome3-6")
+		replyTo backHome with moveDone : moveDone(backHome, 1)
+	}
+	Goto s0
+	State moveToSlotOut {
+		delay 6000
+		println("[ROBOT] moveToSlotOut4")
+		replyTo moveToSlotOut with moveDone : moveDone(moveToSlotOut, 1)
+	}
+	Goto s0
+	State moveToOut {
+		delay 6000
+		println("[ROBOT] moveToOut5")
+		replyTo moveToOut with moveDone : moveDone(moveToOut, 1)
+	}
+	Goto s0
 }
 
 // ----------------------------------
@@ -173,8 +335,11 @@ QActor dtfree context ctxservice {
 	State timing {
 		
 	}
+	//TODO: decidere come gestire la liberazione: il timer controlla in continuazione
+	//e quando si libera manda un evento o il sensore (meglio)?
 	Transition t1 whenTime 60000 -> timeout
 		whenMsg stopTimer -> idle
+		whenEvent outdoorAreaNowFree -> idle
 	State timeout {
 		emit timeout : timeout(_)
 	}
