@@ -85,7 +85,7 @@ Reply    pickUpReply	: pickUpReply(STATUS)
 
 // CONTEXTS
 
-Context ctxservice  ip [ host= "localhost" port= 8050 ]
+Context ctxservice ip [ host= "localhost" port= 8050 ]
 Context ctxclient ip [ host= "localhost" port= 8051 ]
 Context ctxmanager ip [ host= "localhost" port= 8052 ]
 Context ctxrobot ip [ host= "localhost" port= 8053 ]

@@ -233,14 +233,14 @@
 			<li><ks>parking-area</ks>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
 				OUTDOOR, OUTDOOR-area, parking-slots, thermometer and a fan;</li>
 			<li><ks>INDOOR</ks>: Cars use this gate to enter the parking-area;</li>
-			<li><ks>INDOOR-area</ks>: Cars are left here by the drivers and the transport trolley picks them up here. It is
-				located inside the parking area;</li>
-			<li><ks>weightsensor</ks>: Sensor to measure the weight of the car, located in the INDOOR-area;</li>
+			<li><ks>INDOOR-area</ks>: The transport trolley positions itself in this location to pick the car parked in
+				front of the INDOOR. It is located inside the parking area;</li>
+			<li><ks>weightsensor</ks>: Sensor to measure the weight of the car, located in front of the INDOOR;</li>
 			<li><ks>OUTDOOR</ks>: Cars uses this gate to exit from the parking-area;</li>
 			<li><ks>OUTDOOR-area</ks>: The transport trolley positions itself in this location to leave the car
 				just outside the OUTDOOR. Drivers pick them up there.
 				It is located inside the parking area;</li>
-			<li><ks>outsonar</ks>: Controls the presence of cars in the outdoor area. [Guaranteed not to fire false positive or negatives];</li>
+			<li><ks>outsonar</ks>: Sensor that detects cars outside the OUTDOOR;</li>
 			<li><ks>parking-slots</ks>: Dedicated slots inside the parking area where cars are left by the transport
 				trolley. There are 6 parking-slots;</li>
 			<li><ks>thermometer</ks>: Sensor used to measure the temperature inside the parking-area;</li>
@@ -358,7 +358,106 @@
 
 	<h2>Test plans</h2>
 	<div class="remark">
+		<ul>
+			<li>client request a slot, and it's free: receive slotnum != 0 </li>
+			<li>client request a slot, but there's no space: receive slotnum == 0</li>
+			<li>client request a slot, but there's still a client before him: new client wait</li>
+			<li>client press CARENTER, check: unique tokenid, slot become occupied, ?the weightsensor weght car?</li>
+			<li>client pickup no error, check: slot become free, tokenid correspond, free outdoor area in tot time</li>
+			<li>client pickup, but the token does not correspond, error</li>
+			<li>client pickup, but there's still a client before him: new client wait</li>
+			<li>manager checkstatus, receive sensible value</li>
+			<li>? temperature over TMAX, check if robot stop</li>
+			<li>manager start and stop robot</li>
+			<li>manager start and stop fan</li>
+		</ul>
 
+		<table style="width:100%" border="1">
+			<tr>
+				<td>
+					<h3>testRequestSlot</h3>
+					The client request a slot and there is one slot free.
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client receive 1 <= SLOTNUM <= 6</li>
+						<li>The selected slot become reserved???</li>
+					</ul>
+				</td>
+
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testRequestSlotNoSlotsFree</h3>
+					The client request a slot but there is not a free slot.
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client receive SLOTNUM == 0</li>
+						<li></li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testRequestSlotIndoorOccupied</h3>
+					The client request a slot, but there is still a client in the INDOOR-area
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The system notifies the client to wait before entering</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testPressCarEnter</h3>
+					The client request a slot, but there is still a client in the INDOOR-area
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client receive a unique tokenID</li>
+						<li>The selected parking slot become occupied</li>
+						<li>?? The system weight the car ??</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testClientPickup</h3>
+					The client request to pick up his car by submitting the tokenID, and then leave
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The tokenID is valid</li>
+						<li>The selected parking slot become free</li>
+						<li>The OUTDOOR-area must be freed within TMAX time</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testClientPickupOutdoorOccupied</h3>
+					The client request to pick up his car by submitting the tokenID, but the OUTDOOR-area is occupied
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The tokenID is valid</li>
+						<li>The system notifies the client to wait</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h3>testClientPickupWrongToken</h3>
+					The client request to pick up his car by submitting the tokenID, but the tokenID is not valid
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client receives an error from the system</li>
+					</ul>
+				</td>
+			</tr>
+		</table>
 	</div>
 
 	<h2>Work plan</h2>
