@@ -198,6 +198,23 @@
         width: 85%;
         margin: auto;
     }
+	ol.custom {
+		counter-reset: number;
+	}
+	ol.custom > li {
+		list-style: none;
+		counter-increment: number;
+	}
+	ol.custom.functional > li::before {
+		content: "F" counter(number) ".";
+		position: relative;
+		left:-5px
+	}
+	ol.custom.nonfunctional > li::before {
+		content: "NF" counter(number) ".";
+		position: relative;
+		left:-5px
+	}
 </style>
 
 	<title>ParkManagerService</title>
@@ -315,7 +332,15 @@
 				engineering company;</li>
 		</ul>
 		For the sake of completeness, a machine-readable <a href="model-requirements.qak">model</a> is also available.
-
+		<h3>List of requirements</h3>
+		<h4>Functional requirements</h4>
+		<ol class="custom functional">
+			<li id="F1"></li>
+		</ol>
+		<h4>Non-functional requirements</h4>
+		<ol class="custom nonfunctional">
+			<li id="NF1"></li>
+		</ol>
 	</div>
 
 	<h2>Problem analysis</h2>
