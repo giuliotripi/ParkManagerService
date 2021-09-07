@@ -225,10 +225,9 @@
 		<h4>Nouns</h4>
 		<ul>
 			<li><ks>ParkManagerService</ks>: The software system which will implement the required automation functions;</li>
-			<li><ks>DDR robot</ks>: Differential/Direct? Drive Robot. Has the form of a square of side length RD;</li>
-			<li><ks>transport trolley</ks>: A DDR robot which is used to move cars
-				from the INDOOR(?INDOOR-area?) to the selected parking-slot;
-			</li>
+			<li><ks>DDR robot</ks>: Differential Drive Robot. Has the form of a square of side length RD;</li>
+			<li><ks>transport trolley</ks>: A DDR robot which is used to move cars from the INDOOR to the selected
+				parking-slot;</li> <!-- TODO: how to control it? -->
 			<li><ks>home</ks>: Starting position for the robot, located in the top-left corner of the environment. When the
 				robot completes a request, and there are no further instruction, it will return in this position;</li>
 			<li><ks>parking-area</ks>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
@@ -238,21 +237,22 @@
 				located inside the parking area;</li>
 			<li><ks>weightsensor</ks>: Sensor to measure the weight of the car, located in the INDOOR-area;</li>
 			<li><ks>OUTDOOR</ks>: Cars uses this gate to exit from the parking-area;</li>
-			<li><ks>OUTDOOR-area</ks>: Cars are left here by transport trolley and drivers picks them up here.
+			<li><ks>OUTDOOR-area</ks>: The transport trolley positions itself in this location to leave the car
+				just outside the OUTDOOR. Drivers pick them up there.
 				It is located inside the parking area;</li>
 			<li><ks>outsonar</ks>: Controls the presence of cars in the outdoor area. [Guaranteed not to fire false positive or negatives];</li>
 			<li><ks>parking-slots</ks>: Dedicated slots inside the parking area where cars are left by the transport
 				trolley. There are 6 parking-slots;</li>
 			<li><ks>thermometer</ks>: Sensor used to measure the temperature inside the parking-area;</li>
 			<li><ks>fan</ks>: A fan used to reduce the temperature inside the parking-area. It can be manually activated
-				by the parking manager, or it can activate automatically;</li>
+				by the parking manager, or it can activate automatically. It can be either on or off;</li>
 			<li><ks>map</ks>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
 			<li><ks>fixed obstacles</ks>: Immovable objects that the robot cannot traverse;</li>
 			<li><ks>parking-manager</ks>: Person in charge of the parking-area, who supervises the state and handles
 				critical situations;</li>
 			<li><ks>client</ks>: Person using services of the parking-area. In particular, he will leave and pickup the car;</li>
-			<li><ks>ParkServiceGUI</ks>: GUI for parking clients to leave and pick up cars. Situated near the indoor and
-				outdoor area;</li>
+			<li><ks>ParkServiceGUI</ks>: GUI for parking clients to leave and pick up cars. It can be accessed by the client
+				by using their own personal device;</li>
 			<li><ks>ParkServiceStatusGUI</ks>: GUI for the parking-manager to manage some aspects of the parking area;</li>
 			<li><ks>SLOTNUM</ks>: id of the parking slot given to the client, representing the location where the car will
 				be placed by transport trolley. If equal to 0, no parking slots are available</li>
@@ -287,6 +287,34 @@
 			<li><ks>start the robot</ks>: after the parking-manager stops the robot, it remains stopped until restarted
 				by the parking-manager;</li>
 		</ul>
+		<h3>System architecture</h3> <!-- Physical separation between machines, Separation between machines? -->
+		The requirements given by the customer point out the structure of the system intended as the distribution of the
+		program between different devices:
+		<ul>
+			<li>The client devices to interact with the ParkServiceGUI;</li>
+			<li>The parking manager device to interact with the ParkServiceStatusGUI;</li>
+			<li>The ParkManagerService core;</li>
+			<li>The transport trolley;</li>
+			<li>The three sensors and the fan.</li>
+		</ul>
+		<h3>Additional user stories</h3>
+			Multiple users using the application:
+			<ol>
+				<li></li>
+			</ol>
+		<h3>Additional requirements and details</h3>
+		<ul>
+			<li>The fan is automatically activated/deactivated by ParkManagerService. The parking manager cannot overtake control of it;</li>
+			<li>The transport trolley cannot be stopped if TA <= TMAX;</li>
+			<li>It is impossible that a customer reaches the INDOOR without having reserved a parking slot from the GUI;</li>
+			<li>When client try to do acceptIN, if the transport trolley is stopped, the client should see an error message;</li>
+			<li>When parking manager starts the transport trolley, it should continue the move it was doing before stop;</li>
+			<li>Temperature is in Celsius and mass in kilograms;</li>
+			<li>TMAX and DTFREE will be placed in a configuration file accessible by the application;</li>
+			<li>Only the transport trolley is provided by the customers, all the other devices must be chosen and provided by the
+				engineering company;</li>
+		</ul>
+		For the sake of completeness, a machine-readable <a href="model-requirements.qak">model</a> is also available.
 
 	</div>
 
@@ -296,8 +324,13 @@
 		A possible abstraction gap is the communication with all the different devices in the parking area:
 		<ul>
 			<li><ks>weight sensor</ks>: </li>
-			<li><ks>outsonar</ks>: </li>
-			<li><ks>fan</ks>: </li>
+			<li><ks>outsonar</ks>: Ultrasonic sensor that measures the distance of an obstacle in front of it.
+				The customer provides an
+				<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.rasp2021/resources/rasp/sonar/SonarAlone.c">example implementation</a>
+				of a program reading the distance from the sensor.
+				The sensor is connected to the software via a cable and supports platforms like Arduino and Raspberry Pi.</li>
+			<li><ks>fan</ks>: can be controlled simply giving or removing power from it. A relay could be used to switch
+			it on and off from a computer</li>
 			<li><ks>thermometer</ks>: </li>
 			<li><ks>transport trolley</ks>: The customer provides a set of utilities to interact with the robot, both in
 				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.qak21.basicrobot">qak</a> and
