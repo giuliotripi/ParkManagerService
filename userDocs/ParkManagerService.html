@@ -335,27 +335,32 @@
 		<h4>Functional requirements</h4>
 		<ol class="custom functional">
 			<li>The client can book a parking slot through ParkServiceGUI.</li>
-			<li>The system sends the client an id of the parking slot if there are slots available, otherwise it sends 0.</li>
+			<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0.</li>
 			<li>The client notifies the ParkManagerService when he leaves the car in front of the INDOOR.</li>
 			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the
 				OUTDOOR by sending command to a transport trolley.</li>
 			<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later.</li>
 			<li>The system must understand if client's car is not in front of the INDOOR during F3</li>
-			<li>The system command the transport trolley to take the car and transport it to the booked parking slot</li>
-			<li></li>
-			<li>Allow one car to enter the parking area</li>
-			<li>The system </li>
-			<li>The parking manager can see the current state of the parking area through the ParkServiceStatusGUI</li>
-			<li>The parking manager can stop the transport trolley when TA > TMAX</li>
-			<li>The parking manager can start the transport trolley when it is stopped</li>
-			<li>The ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX</li>
-			<li>The ParkManagerService should notify the parking manager when the OUTDOOR area is not cleaned within the DTFREE
+			<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
+				available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
+				at home or working</li>
+			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI</li>
+			<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
+				don't detect a car in front of the OUTDOOR, and the transport trolley is either at home or working</li>
+			<li>The system must infer the correct parking-slot from the corresponding TOKENID</li>
+			<li>The parking manager can see the current state of the parking area through ParkServiceStatusGUI</li>
+			<li>The parking manager should be able to stop the transport trolley when TA > TMAX through ParkServiceStatusGUI</li>
+			<li>The parking manager should be able to start the transport trolley when it is stopped through ParkServiceStatusGUI</li>
+			<li>ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX</li>
+			<li>ParkManagerService should notify the parking manager when the OUTDOOR is not cleaned within DTFREE
 			interval of time</li>
 		</ol>
+
 		<h4>Non-functional requirements</h4>
 		<ol class="custom nonfunctional">
-			<li id="NF1"></li>
+			<li id="NF1">The TOKENID generated must be secure and not easy to guess</li>
 		</ol>
+
 		<script type="application/javascript">
 			let functionalList = document.querySelectorAll('ol.functional.custom > li');
 			for (let i = 0; i < functionalList.length; i++)
