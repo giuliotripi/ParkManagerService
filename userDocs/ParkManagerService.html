@@ -361,6 +361,30 @@
 			<li id="NF1">The TOKENID generated must be secure and not easy to guess</li>
 		</ol>
 
+		<h4>Transport Trolley</h4>
+		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
+		the parking. The customer has provided us the model and the code of a basicrobot (link). The basicrobot is able
+		to execute basic move commands, is a CoAP-observable resource, and can interact with a concrete robot. It is
+		modelled as an actor. Because we are in a distributed system, and most likely the transport trolley will be on a
+		separate node, the transport trolley will be modelled as an active entity, an actor, that wraps the basicrobot.
+		The following graphs show the interaction between the transport trolley and the ParkManagerService.
+
+
+		<h4>Other devices</h4>
+		We have different devices in the parking area:
+		<ul>
+			<li></li>
+
+		</ul>
+
+		As they will all be on different nodes inside the parking area, we will also model these devices as actors.
+		Furthermore, the weight sensor, the outsonar and the thermometer must be also capable of sending events, so by
+		making them as active entities, we won't have the need to interact with polling. The following graphs show the
+		interaction between these devices and the ParkManagerService.
+
+		codice già fornito per il sonar, è un oggetto, incapsularlo in un attore
+
+
 		<script type="application/javascript">
 			let functionalList = document.querySelectorAll('ol.functional.custom > li');
 			for (let i = 0; i < functionalList.length; i++)
@@ -416,7 +440,7 @@
 			<li>client request a slot, and it's free: receive slotnum != 0 </li>
 			<li>client request a slot, but there's no space: receive slotnum == 0</li>
 			<li>client request a slot, but there's still a client before him: new client wait</li>
-			<li>client press CARENTER, check: unique tokenid, slot become occupied, ?the weightsensor weght car?</li>
+			<li>client press CARENTER, check: unique tokenid, slot become occupied, ?the weightsensor weight car?</li>
 			<li>client pickup no error, check: slot become free, tokenid correspond, free outdoor area in tot time</li>
 			<li>client pickup, but the token does not correspond, error</li>
 			<li>client pickup, but there's still a client before him: new client wait</li>
