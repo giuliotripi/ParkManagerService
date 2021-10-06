@@ -318,6 +318,14 @@
 			<li>TMAX and DTFREE will be placed in a configuration file accessible by the application;</li>
 		</ul>
 
+		<h4>Map of the parking-area</h4>
+		The customer provides a
+		<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.kotlinSupports/app/src/main/kotlin/mapRoomKotlin/mapUtil.kt">library</a>
+		in Kotlin to represent the map of the parking-area.<br>
+
+		<img src="img/map.png" style="max-width: 70%" alt="Position of sensors in map"><br>
+		<img src="img/map2.png" style="max-width: 70%" alt="Non traversable positions in map"><br>
+
 		<h3>Additional user stories</h3>
 		In order to explain better some edge cases, some examples were made with the customer, reported below.<br>
 		<ks>Multiple users using the application</ks><br>
@@ -423,7 +431,7 @@
 
 		<img style="max-width: 100%" src="img/logical-architecture-requirements.png" alt="logical architecture">
 
-		For the sake of completeness, we also provided a machine-readable <a href="model-requirements<.qak">model</a>,
+		For the sake of completeness, we also provided a machine-readable <a href="model-requirements.qak">model</a>,
 		which highlights only the core aspects of the system, namely, the park phase and the pick-up phase.
 	</div>
 
@@ -432,54 +440,96 @@
 		<h4>Devices</h4>
 		A possible abstraction gap is the communication with all the different devices in the parking area:
 		<ul>
-			<li><ks>weight sensor</ks>: </li>
+			<li><ks>weight sensor & thermometer</ks>: since it is physically distant from the other components, the ParkManagerService
+				should communicate with it via message-passing. It will then read the measurements from a physical or
+				virtual device (mock object)</li>
 			<li><ks>outsonar</ks>: Ultrasonic sensor that measures the distance of an obstacle in front of it.
 				The customer provides an
 				<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.rasp2021/resources/rasp/sonar/SonarAlone.c">example implementation</a>
 				of a program reading the distance from the sensor.
 				The sensor is connected to the software via a cable and supports platforms like Arduino and Raspberry Pi.</li>
 			<li><ks>fan</ks>: can be controlled simply giving or removing power from it. A relay could be used to switch
-				it on and off from a computer</li>
-			<li><ks>thermometer</ks>: </li>
+			it on and off from a computer</li>
 			<li><ks>transport trolley</ks>: The customer provides a set of utilities to interact with the robot, both in
 				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.qak21.basicrobot">qak</a> and
 				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.kotlinSupports">kotlin</a>.<br>
 				In addition, is available an
-				<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a> to communicate with the robot independently
-				of the libraries provided.</li>
+				<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a> to communicate with a virtual robot
+				to simulate the moves of a real robot in a virtual environment.</li>
+				The basic robot allows interacting with a virtual or some physical devices only changing a configuration file.
 		</ul>
 
-		<h4>Map of the parking-area</h4>
-		The customer provides a
-		<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.kotlinSupports/app/src/main/kotlin/mapRoomKotlin/mapUtil.kt">library</a>
-		in Kotlin to represent the map of the parking-area.
+		<h5>Communication between devices</h5>
+		Given the Requirements analysis it is now possible to define the interaction between all the devices in the System.<br>
 
-		TODO: insert here map as grid with indications of all areas
+		<ul>
+			<li><ks>outsonar</ks>: the customer provided us, besides the SonarAlone.c program, even some applications
+			that sends events for every reading or every bunch of readings. To avoid unnecessary traffic on the net it
+				is better to re-implement it, to make some processing on the outsonar and only send events when a car arrives or leaves.
+				To make this choice, it reads at starting the minimum distance from a configuration file.</li>
+			<li><ks>weight sensor & thermometer</ks>: as for the outsonar, and to avoid a polling mechanism, those
+				sensors send events only when the read value goes over or lower a specific value written in a
+				configuration file in the device memory.
+			</li>
+			<li><ks>fan</ks>: accepts only start/stop commands</li>
+		</ul>
 
-		<!-- <h4>User interaction</h4> Da finire con eventuali altre user story -->
+		<img style="max-width: 100%" src="img/sensor-interaction.png" alt="Sensor interaction">
+		<br>
+		There are some possible protocols for communicating between the different devices. The most relevant are:<br>
+		<ul>
+			<li><ks>CoAP</ks>: (a)synchronous one-to-one communication protocol based on a request-response
+				model, has even some implementations that runs over DTLS, even if it seems not popular as
+				webSockets on TLS.</li>
+			<li><ks>MQTT</ks>: asynchronous publish-subscribe model with a many-to-many mindset, not required
+				in this scenario</li>
+			<li><ks>HTTP</ks>: it is quite heavy and unidirectional, but could be used for example for the fan, that
+				should only receive commands and reply with an ok/non-ok message. On the other hand, in this way, to provide a layer of encryption, the fan
+			should have an HTTP server and a TLS certificate that should be renewed when expired, complicating the maintenance.</li>
+			<li><ks>WebSockets</ks>: lighter than HTTP but still heavy. Bi-directional and supports encryption with
+				minimum effort. Because of his bi-directionality, only the Service should act as a server and the other
+				devices could easily connect to it and exchange messages, requiring only one server and one TLS certificate.</li>
+		</ul>
+		At the same time, it is true that only the Service has to be exposed to internet, and it could communicate with
+		the devices over a private network non-accessible by other devices, thus not requiring encryption.<br>
+		In this case, the Service has to be located in the neighborhood of all the sensors, while with encryption it
+		could be located everywhere and provide his services with a reduced risk of in-place maintenance.<br>
+		At this point, the two main alternatives are CoAP and WebSockets.
+		<h4>GUI interaction</h4>
+
+
+
+
+		+qualcosa sul planner (intanto qui poi sopra)
+
+
+
 		<h4>Logical architecture</h4>
 		The image above represents the logical architecture of the system.
 		<br>
-		<img style="max-width: 100%" src="img/logical-architecture.png" alt="Logical architecture">
+
+		The two GUIs are represented in a different context because the ParkManagerService could expose some APIs
+		completely independent of the GUIs, that can be served even by different machine or installed as mobile apps
+		on users' devices. A scheme of the API in OpenAPI format is available <a href="">here</a>.
 		<br>
 		It is also available an executable model of the system written in <a href="model.qak">qak language</a>.
 	</div>
 
 	<h2>Test plans</h2>
 	<div class="remark">
-		<ul>
-			<li>client request a slot, and it's free: receive slotnum != 0 </li>
-			<li>client request a slot, but there's no space: receive slotnum == 0</li>
+		<ol>
+			<li>client request a slot, and it's free: receive slotnum != 0 (RF1)</li>
+			<li>client request a slot, but there's no space: receive slotnum == 0 (RF1)</li>
 			<li>client request a slot, but there's still a client before him: new client wait</li>
-			<li>client press CARENTER, check: unique tokenid, slot become occupied, ?the weightsensor weight car?</li>
+			<li>client press CARENTER, check: slot become occupied, check the behaviour of the system whenever the weightsensor detect a car</li>
 			<li>client pickup no error, check: slot become free, tokenid correspond, free outdoor area in tot time</li>
 			<li>client pickup, but the token does not correspond, error</li>
 			<li>client pickup, but there's still a client before him: new client wait</li>
 			<li>manager checkstatus, receive sensible value</li>
-			<li>? temperature over TMAX, check if robot stop</li>
+			<li>temperature over TMAX, check if robot stop</li>
 			<li>manager start and stop robot</li>
 			<li>manager start and stop fan</li>
-		</ul>
+		</ol>
 
 		<table style="width:100%" border="1">
 			<tr>
