@@ -244,7 +244,7 @@
 			<li><ks>ParkManagerService</ks>: The software system which will implement the required automation functions;</li>
 			<li><ks>DDR robot</ks>: Differential Drive Robot. Has the form of a square of side length RD; (link al file del robot da costruire)</li>
 			<li><ks>transport trolley</ks>: A DDR robot which is used to move cars from the INDOOR to the selected
-				parking-slot;</li> <!-- TODO: how to control it? -->
+				parking-slot;</li>
 			<li><ks>home</ks>: Starting position for the robot, located in the top-left corner of the environment. When the
 				robot completes a request, and there are no further instruction, it will return in this position;</li>
 			<li><ks>parking-area</ks>: Empty environment outside which the robot cannot go. It includes INDOOR, INDOOR-area,
@@ -338,7 +338,7 @@
 		</ol>
 
 		<h3>List of requirements</h3>
-		<h4>Functional requirements</h4> 	<!-- TODO: controllare i requisiti -->
+		<h4>Functional requirements</h4>
 		<ol class="custom functional">
 			<li>The client can book a parking slot through ParkServiceGUI.</li>
 			<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0.</li>
@@ -346,29 +346,32 @@
 			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the
 				OUTDOOR by sending command to a transport trolley.</li>
 			<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later.</li>
-			<li>The system must understand if client's car is not in front of the INDOOR during F3</li>
+			<li>The system must understand if a client's car is not in front of the INDOOR during F3</li>
 			<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
 				available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
 				at home or working</li>
 			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI</li>
+			<li>The system must infer the correct parking-slot from the corresponding TOKENID</li>
 			<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
 				don't detect a car in front of the OUTDOOR, and the transport trolley is either at home or working</li>
-			<li>The system must infer the correct parking-slot from the corresponding TOKENID</li>
 			<li>The parking manager can see the current state of the parking area through ParkServiceStatusGUI</li>
 			<li>The parking manager should be able to stop the transport trolley when TA > TMAX through ParkServiceStatusGUI</li>
 			<li>The parking manager should be able to start the transport trolley when it is stopped through ParkServiceStatusGUI</li>
 			<li>ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX</li>
 			<li>ParkManagerService should notify the parking manager when the OUTDOOR is not cleaned within DTFREE
 				interval of time</li>
+			<li>The trolley must go back to home when there are no more requests available</li>
+			<li>The trolley should not walk over parking-slots or obstacles</li>
 		</ol>
 
 		<h4>Non-functional requirements</h4>
 		<ol class="custom nonfunctional">
-			<li id="NF1">The TOKENID generated must be secure and not easy to guess</li>
-			<lI>The system can handle one client at a time, putting on hold </lI>
+			<li>The TOKENID generated must be secure and not easy to guess</li>
+			<li>The system can handle one client at a time, putting on hold further requests</li>
+			<li>It should be possible to swap between real sensor and simulated mock-objects with ease</li>
 		</ol>
 
-		<h3>System architecture</h3> <!-- TODO: rewrite -->
+		<h3>System architecture</h3>
 		From the requirements given by the customer, we can deduce the structure of the system. It is a distributed
 		system, with different devices communicating with each other in different places of the parking area. More
 		specifically, we have:
@@ -382,17 +385,13 @@
 
 		<h4>Transport Trolley</h4>
 		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
-		the parking. The customer has provided us the model and the code of a basicrobot (link, 14:30). The basicrobot is
-		able to execute basic move commands, is a CoAP-observable resource, and can interact with a concrete robot. It is
-		modelled as an actor. Because we are in a distributed system, and most likely the transport trolley will be on a
-		separate node, the transport trolley will be modelled as an active entity, an actor, that wraps the basicrobot.
-		The following graphs show the interaction between the transport trolley and the ParkManagerService. These
-		basic interactions can be deduced from the requirements. Further interaction will be added if needed in the
-		problem analysis.
-
-
-		<!-- queste interazioni si deducono dal documento dei requisiti-->
-
+		the parking. The customer has provided us the model and the code of a <a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/main/it.unibo.qak21.basicrobot/userDocs/basicrobot2021.html">basicrobot</a>.
+		The basicrobot is able to execute basic move commands, is a CoAP-observable resource, and can interact with a
+		concrete robot. It is modelled as an actor. Because we are in a distributed system, and most likely the transport
+		trolley will be on a separate node, the transport trolley will be modelled as an active entity, an actor, that
+		wraps the basicrobot. The following graphs show the interaction between the transport trolley and the
+		ParkManagerService. These basic interactions can be deduced from the requirements. Further interaction will be
+		added if needed in the problem analysis.
 
 		<img style="max-width: 100%" src="img/trolley-interaction.png" alt="trolley interaction">
 
@@ -412,8 +411,6 @@
 		a detection device. The accuracy of the thermometer is one degree.
 		The interaction between these devices and the ParkManagerService will be defined in the Problem Analysis.
 
-		<!-- frecce senza punta, interazioni ancora da definire-->
-
 		<!-- Furthermore, the weight sensor, the outsonar and the thermometer must be also capable of sending events, so by
 		making them as active entities, we won't have the need to interact with polling. The following graphs show the
 		interaction between these devices and the ParkManagerService. -->
@@ -422,12 +419,11 @@
 
 		<!-- codice già fornito per il sonar, è un oggetto, incapsularlo in un attore -->
 
+		The following image shows all the devices in the parking area, and how they are connected to each other.
 
-		<img style="max-width: 100%" src="img/logical-architecture2.png" alt="logical architecture">
+		<img style="max-width: 100%" src="img/logical-architecture-requirements.png" alt="logical architecture">
 
-
-		<!-- TODO: interazioni solo tra trolley, service e cliente, modello semplificato-->
-		For the sake of completeness, we provided a machine-readable <a href="model-requirements<.qak">model</a>,
+		For the sake of completeness, we also provided a machine-readable <a href="model-requirements<.qak">model</a>,
 		which highlights only the core aspects of the system, namely, the park phase and the pick-up phase.
 	</div>
 
