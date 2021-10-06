@@ -369,8 +369,9 @@
 		</ol>
 
 		<h3>System architecture</h3> <!-- TODO: rewrite -->
-		The requirements given by the customer point out the structure of the system intended as the distribution of the
-		program between different devices:
+		From the requirements given by the customer, we can deduce the structure of the system. It is a distributed
+		system, with different devices communicating with each other in different places of the parking area. More
+		specifically, we have:
 		<ul>
 			<li>The client devices to interact with the ParkServiceGUI;</li>
 			<li>The parking manager device to interact with the ParkServiceStatusGUI;</li>
@@ -381,8 +382,8 @@
 
 		<h4>Transport Trolley</h4>
 		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
-		the parking. The customer has provided us the model and the code of a basicrobot (link, 14:30). The basicrobot is able
-		to execute basic move commands, is a CoAP-observable resource, and can interact with a concrete robot. It is
+		the parking. The customer has provided us the model and the code of a basicrobot (link, 14:30). The basicrobot is
+		able to execute basic move commands, is a CoAP-observable resource, and can interact with a concrete robot. It is
 		modelled as an actor. Because we are in a distributed system, and most likely the transport trolley will be on a
 		separate node, the transport trolley will be modelled as an active entity, an actor, that wraps the basicrobot.
 		The following graphs show the interaction between the transport trolley and the ParkManagerService. These
@@ -417,7 +418,7 @@
 		making them as active entities, we won't have the need to interact with polling. The following graphs show the
 		interaction between these devices and the ParkManagerService. -->
 
-		<img style="max-width: 100%" src="img/sensor-interaction.png" alt="sensor interaction">
+		<img style="max-width: 100%" src="img/sensor-interaction-requirements.png" alt="sensor interaction">
 
 		<!-- codice già fornito per il sonar, è un oggetto, incapsularlo in un attore -->
 
@@ -426,7 +427,8 @@
 
 
 		<!-- TODO: interazioni solo tra trolley, service e cliente, modello semplificato-->
-		For the sake of completeness, a machine-readable <a href="model-requirements<.qak">model</a> is also available.
+		For the sake of completeness, we provided a machine-readable <a href="model-requirements<.qak">model</a>,
+		which highlights only the core aspects of the system, namely, the park phase and the pick-up phase.
 	</div>
 
 	<h2>Problem analysis</h2>
