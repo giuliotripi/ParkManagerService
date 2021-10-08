@@ -23,22 +23,6 @@ System /*-trace*/ -msglog  parkingservice
 Request  getTemp	: getTemp(X)
 Reply    temp		: temp(T)
 
-// SENSORS & FAN
-
-Request  getSonar	: getSonar(X)
-Reply    sonarState	: sonarState(STATE)
-
-Event outdoorAreaNowFree : outdoorAreaNowFree(X)
-
-Request  getWeight		: getWeight(X)
-Reply    weightState	: weightState(WEIGHT)
-
-Request  getFanState	: getFanState(X)
-Reply    fanState		: fanState(STATE)
-
-Dispatch setFanOn		: setFanOn(X)
-Dispatch setFanOff		: setFanOff(X)
-
 //TIMER
 
 Dispatch startTimer		: startTimer(_)
@@ -59,7 +43,7 @@ Reply    moveDone		: moveDone(MOVE, RESULT)
 
 Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
 
-Request  backHome		: backHome(X)
+Request  moveToHome		: moveToHome(X)
 
 Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
 
@@ -90,10 +74,10 @@ Reply    pickUpReply	: pickUpReply(STATUS)
 // CONTEXTS
 
 Context ctxservice ip [ host= "localhost" port= 8050 ]
-Context ctxclient ip [ host= "127.0.0.1" port= 8051 ]
-Context ctxmanager ip [ host= "127.0.0.2" port= 8052 ]
-Context ctxrobot ip [ host= "127.0.0.3" port= 8053 ]
-//+uno per ogni sensore
+Context ctxclient ip [ host= "localhost" port= 8051 ]
+Context ctxmanager ip [ host= "localhost" port= 8052 ]
+Context ctxrobot ip [ host= "localhost" port= 8053 ]
+
 
 QActor service context ctxservice {
 	[# var Occupati = BooleanArray(6) { false }
@@ -163,7 +147,7 @@ QActor service context ctxservice {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
 					
 			//if there are not other requests
-			request robot -m backHome : backHome(X)
+			request robot -m moveToHome : moveToHome(X)
 				
 		}
 	}
@@ -210,7 +194,7 @@ QActor service context ctxservice {
 			
 			forward dtfree -m startTimer : startTimer(X)
 			//if there are not other requests
-			request robot -m backHome : backHome(X)
+			request robot -m moveToHome : moveToHome(X)
 		}
 	}
 	Transition t5
@@ -291,7 +275,7 @@ QActor robot context ctxrobot { //TODO: ctxrobot
 	Transition t0
 		whenRequest moveToIn -> moveToIn
 		whenRequest moveToSlotIn -> moveToSlotIn
-		whenRequest backHome -> backHome
+		whenRequest moveToHome -> moveToHome
 		whenRequest moveToSlotOut -> moveToSlotOut
 		whenRequest moveToOut -> moveToOut
 	State moveToIn {
@@ -306,10 +290,10 @@ QActor robot context ctxrobot { //TODO: ctxrobot
 		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
 	}
 	Goto s0
-	State backHome {
+	State moveToHome {
 		delay 6000
-		println("[ROBOT] backHome3-6")
-		replyTo backHome with moveDone : moveDone(backHome, 1)
+		println("[ROBOT] moveToHome3-6")
+		replyTo moveToHome with moveDone : moveDone(moveToHome, 1)
 	}
 	Goto s0
 	State moveToSlotOut {
@@ -354,80 +338,29 @@ QActor dtfree context ctxservice {
 //		ACTORS FOR SENSORS & FAN
 // ----------------------------------
 
+// Draft of sensors not yet defined in requirements analysis
+
 QActor thermometer context ctxservice {
 	State s0 initial {    
   		 println("Thermometer init")
 	}
-	Transition t0 
-		whenRequest getTemp -> handleRequest
-  	
-	State handleRequest {
-		replyTo getTemp with temp : temp(20) // TODO: random temperature
-   	}
-	Transition t1
-		whenRequest getTemp -> handleRequest
 }
 
 QActor sonar context ctxservice {
 	State s0 initial {    
   		 println("Sonar init")
 	}
-	Transition t0 
-		whenRequest getSonar -> handleRequest
-  	
-	State handleRequest {
-		replyTo getSonar with sonarState : sonarState(0) // TODO: random value
-   	}
-	Transition t1
-		whenRequest getSonar -> handleRequest
 }
 
 QActor fan context ctxservice {
-	[# var Stato = 0 #]  //State is a reserved keyword
-	State s0 initial {    
+	State s0 initial {
   		 println("Fan init")
 	}
-	Goto off
-  	State off {
-		println("Fan off")
-		[# Stato = 0 #]
-		discardMsg On
-	}
-	Transition t1 whenMsg setFanOn -> on
-		//whenMsg disableAlarm -> disabled
-		whenRequest getFanState -> handleGetFanState
-	//se qui mi arriva un disable devo scartare il messaggio (o tornare a disabled, non accumularlo, altrimenti poi torna qui)
-	State on {
-		println("Fan on")
-		[# Stato = 1 #]
-		discardMsg On //sto scartando solo i messaggi != disableAlarm e non quelli getAlarmState che magari mi arrivano contemporaneamente?
-	}
-	Transition t2 whenMsg setFanOff -> off
-		whenRequest getFanState -> handleGetFanState
-		//whenEvent onTemperature -> disabled
-	
-	State handleGetFanState {
-		printCurrentMessage
-		onMsg(getFanState : getFanState(_)) {
-			println("Fan getStatus")
-			replyTo getFanState with fanState : fanState( $Stato )
-		}
-	}
-	Goto off if [# Stato == 0 #]
-	else on //qui potrei dire else if?
 }
 
 QActor weight context ctxservice {
 	State s0 initial {    
   		 println("Weight init")
 	}
-	Transition t0 
-		whenRequest getWeight -> handleRequest
-  	
-	State handleRequest {
-		replyTo getWeight with weightState: weightState(30) // TODO: random weight
-   	}
-	Transition t1
-		whenRequest getWeight -> handleRequest
 }
 
