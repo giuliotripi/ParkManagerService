@@ -316,7 +316,7 @@
 				control of it;</li>
 			<li>The transport trolley cannot be stopped if TA <= TMAX;</li>
 			<li>It is impossible that a customer reaches the INDOOR without having reserved a parking slot from the GUI;</li>
-			<li>When client try to do acceptIN, if the transport trolley is stopped, the client should see an error message;</li>
+			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message;</li>
 			<li>When parking manager starts the transport trolley, it should continue the move it was doing before stop;</li>
 			<li>Temperature is in Celsius and mass in kilograms;</li>
 			<li>TMAX and DTFREE will be placed in a configuration file accessible by the application;</li>
@@ -489,6 +489,7 @@
 			<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
 				available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
 				at home or working</li>
+			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message;</li>
 			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI</li>
 			<li>The system must infer the correct parking-slot from the corresponding TOKENID</li>
 			<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
@@ -755,7 +756,7 @@
 					<ul>
 						<li>The tokenID is valid</li>
 						<li>The selected parking slot become free</li>
-						<li>The OUTDOOR-area must be freed within TMAX time</li>
+						<li>The OUTDOOR-area must be freed within TMAX time</li> <!--più che altro controlliamo che dopo X time dia un evento, magari lo facciamo in un altro test-->
 					</ul>
 				</td>
 			</tr>
@@ -766,7 +767,6 @@
 					The client request to pick up his car by submitting a valid tokenID, but the OUTDOOR-area is occupied
 					<br/><b>Conditions</b>
 					<ul>
-						<li>The tokenID is valid</li>
 						<li>The system notifies the client to wait</li>
 					</ul>
 				</td>
