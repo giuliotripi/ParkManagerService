@@ -544,7 +544,7 @@
 		making them as active entities, we won't have the need to interact with polling. The following graphs show the
 		interaction between these devices and the ParkManagerService. -->
 
-		<img style="max-width: 100%" src="img/sensor-interaction-requirements.png" alt="sensor interaction">
+		<img style="max-width: 100%" src="img/sensor-interaction-requirements.png" alt="sensor interaction"><br>
 
 		<!-- codice già fornito per il sonar, è un oggetto, incapsularlo in un attore -->
 
@@ -559,8 +559,10 @@
 
 	<h2>Problem analysis</h2>
 	<div class="remark">
-		<h4>Devices</h4>
-		A possible abstraction gap is the communication with all the different devices in the parking area:
+		<h3>Devices</h3>
+		It is now important to analyze how the devices are made and how they communicate with the ParkManagerService.
+		We already discussed that the devices are physically distant from each others and the Service, so they should
+		communicate with message-passing. More information on the hardware of the single components are reported below:
 		<ul>
 			<li><ks>weight sensor & thermometer</ks>: since it is physically distant from the other components, the ParkManagerService
 				should communicate with it via message-passing. It will then read the measurements from a physical or
@@ -581,10 +583,11 @@
 				The basic robot allows interacting with a virtual or some physical devices only changing a configuration file.
 		</ul>
 
-		<h5>Communication between devices</h5>
+		<h4>Communication between devices</h4>
 		Given the Requirements analysis it is now possible to define the interaction between all the devices in the System.<br>
 
 		<ul>
+			<li><ks>fan</ks>: accepts only start/stop commands</li>
 			<li><ks>outsonar</ks>: the customer provided us, besides the SonarAlone.c program, even some applications
 			that sends events for every reading or every bunch of readings. To avoid unnecessary traffic on the net it
 				is better to re-implement it, to make some processing on the outsonar and only send events when a car arrives or leaves.
@@ -594,6 +597,10 @@
 				configuration file in the device memory.
 			</li>
 		</ul>
+		Since the behaviour of the three sensors is very similar, the same software will be deployed on all the
+		devices to make it possible to communicate between the sensor and the Service. The sensor specific logic will
+		be placed in a configuration file and the actual reading from the sensor will be done by a specific program
+		called by the connector. (forse una foto vale piu' di mille parole)
 
 		<img style="max-width: 100%" src="img/sensor-interaction.png" alt="Sensor interaction">
 		<br>
@@ -616,8 +623,15 @@
 		In this case, the Service has to be located in the neighborhood of all the sensors, while with encryption it
 		could be located everywhere and provide his services with a reduced risk of in-place maintenance.<br>
 		At this point, the two main alternatives are CoAP and WebSockets.
-		<h4>GUI interaction</h4>
+		<br><br>
 
+		<h3>GUI interaction</h3>
+
+		<img style="max-width: 100%" src="img/gui-interaction.png" alt="GUI interaction"><br>
+
+		The two GUIs are represented in a different context because the ParkManagerService could expose some APIs
+		completely independent of the GUIs, that can be served even by different machine or installed as mobile apps
+		on users' devices.
 
 
 
