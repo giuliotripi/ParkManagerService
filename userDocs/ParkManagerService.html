@@ -529,14 +529,18 @@
 		<h4>Transport Trolley</h4>
 		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
 		the parking. The customer has provided us the model and the code of a <a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/main/it.unibo.qak21.basicrobot/userDocs/basicrobot2021.html">basicrobot</a>.
-		The basicrobot is able to execute basic move commands, is a CoAP-observable resource, and can interact with a
-		concrete robot. It is modelled as an actor. Because we are in a distributed system, and most likely the transport
-		trolley will be on a separate node, the transport trolley will be modelled as an active entity, an actor, that
-		wraps the basicrobot. The following graphs show the interaction between the transport trolley and the
-		ParkManagerService. These basic interactions can be deduced from the requirements. Further interaction will be
-		added if needed in the problem analysis.
+		The basicrobot is able to execute basic move commands, is a CoAP-observable resource, and can interact with both a
+		physical or virtual robot, simply by changing a configuration file. It is modelled as an actor. Because we are in
+		a distributed system, and most likely the transport trolley will be on a separate node, the transport trolley
+		will be modelled as an active entity, an actor, that wraps the basicrobot. The following graphs show the
+		interaction between the transport trolley and the ParkManagerService. These basic interactions can be deduced
+		from the requirements. Further interaction will be added if needed in the problem analysis.
 
 		<img style="max-width: 100%" src="img/trolley-interaction.png" alt="trolley interaction">
+
+		In addition, is available an
+		<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a>
+		to communicate with a virtual robot to simulate the moves of a real robot in a virtual environment.
 
 		<br>
 		As mentioned in the requirements, the transport trolley can be in three different states: <k>idle</k>, <k>working</k>
@@ -545,7 +549,9 @@
 		switches to the <k>working</k> state. If the robot is in the <k>working</k> state, and receives a new request
 		(moveToIn, moveToSlotIn, moveToSlotOut, moveToOut), it will serve that request after finishing the current one,
 		remaining in the <k>working</k> state.
-		Finally, the robot enter and exit the <k>stopped</k> state when receiving the stop and resume command.
+		Finally, the robot enter and exit the <k>stopped</k> state when receiving the stop and resume command.<br>
+
+		<img style="max-width: 100%" src="img/trolley-state.png" alt="Trolley state">
 
 		<h4>Other devices</h4>
 		We have different devices in the parking area: weight-sensor, outsonar, thermometer, fan.
@@ -587,23 +593,12 @@
 		We already discussed that the devices are physically distant from each others and the Service, so they should
 		communicate with message-passing. More information on the hardware of the single components are reported below:
 		<ul>
-			<li><ks>weight sensor & thermometer</ks>: since it is physically distant from the other components, the ParkManagerService
-				should communicate with it via message-passing. It will then read the measurements from a physical or
-				virtual device (mock object)</li>
-			<li><ks>outsonar</ks>: Ultrasonic sensor that measures the distance of an obstacle in front of it.
-				The customer provides an
-				<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.rasp2021/resources/rasp/sonar/SonarAlone.c">example implementation</a>
-				of a program reading the distance from the sensor.
-				The sensor is connected to the software via a cable and supports platforms like Arduino and Raspberry Pi.</li>
+			<li><ks>thermometer</ks>: a DS18B20 device is a low-cost sensor to measure the temperature, connected via
+				cable.
+			</li>
+			<li><ks>outsonar</ks>: The sensor is connected to the software via a cable and supports platforms like Arduino and Raspberry Pi.</li>
 			<li><ks>fan</ks>: can be controlled simply giving or removing power from it. A relay could be used to switch
 			it on and off from a computer</li>
-			<li><ks>transport trolley</ks>: The customer provides a set of utilities to interact with the robot, both in
-				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.qak21.basicrobot">qak</a> and
-				<a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.kotlinSupports">kotlin</a>.<br>
-				In addition, is available an
-				<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a> to communicate with a virtual robot
-				to simulate the moves of a real robot in a virtual environment.</li>
-				The basic robot allows interacting with a virtual or some physical devices only changing a configuration file.
 		</ul>
 
 		<h4>Communication between devices</h4>
@@ -613,25 +608,24 @@
 			<li><ks>fan</ks>: accepts only start/stop commands</li>
 			<li><ks>outsonar</ks>: the customer provided us, besides the SonarAlone.c program, even some applications
 			that sends events for every reading or every bunch of readings. To avoid unnecessary traffic on the net it
-				is better to re-implement it, to make some processing on the outsonar and only send events when a car arrives or leaves.
-				To make this choice, it reads at starting the minimum distance from a configuration file.</li>
-			<li><ks>weight sensor & thermometer</ks>: as for the outsonar, and to avoid a polling mechanism, those
-				sensors send events only when the read value goes over or lower a specific value written in a
-				configuration file in the device memory.
+				is better to re-implement it in such a way that only send events when a car arrives or leaves.
+				To do so, it could read a threshold value from a configuration file.</li>
+			<li><ks>weight sensor & thermometer</ks>: similarly to the outsonar, it is better to embed these sensors in
+				actors, so that they only send events when the value exceeds a certain threshold value. This value
+				could be set using  a configuration file.
 			</li>
 		</ul>
 		Since the behaviour of the three sensors is very similar, the same software will be deployed on all the
 		devices to make it possible to communicate between the sensor and the Service. The sensor specific logic will
 		be placed in a configuration file and the actual reading from the sensor will be done by a specific program
-		called by the connector. (forse una foto vale piu' di mille parole)
+		called by the connector.<br>
 
 		<img style="max-width: 100%" src="img/sensor-interaction.png" alt="Sensor interaction">
 		<br>
 		There are some possible protocols for communicating between the different devices. The most relevant are:<br>
 		<ul>
 			<li><ks>CoAP</ks>: (a)synchronous one-to-one communication protocol based on a request-response
-				model, has even some implementations that runs over DTLS, even if it seems not popular as
-				webSockets on TLS.</li>
+				model, has even some implementations that runs over DTLS, even if it is not as popular as webSockets on TLS.</li>
 			<li><ks>MQTT</ks>: asynchronous publish-subscribe model with a many-to-many mindset, not required
 				in this scenario</li>
 			<li><ks>HTTP</ks>: it is quite heavy and unidirectional, but could be used for example for the fan, that
@@ -641,8 +635,8 @@
 				minimum effort. Because of his bi-directionality, only the Service should act as a server and the other
 				devices could easily connect to it and exchange messages, requiring only one server and one TLS certificate.</li>
 		</ul>
-		At the same time, it is true that only the Service has to be exposed to internet, and it could communicate with
-		the devices over a private network non-accessible by other devices, thus not requiring encryption.<br>
+		While for public network encryption is mandatory, it is true that only the Service has to be exposed to internet,
+		and it could communicate with the devices over a private network non-accessible by other devices, thus not requiring encryption.<br>
 		In this case, the Service has to be located in the neighborhood of all the sensors, while with encryption it
 		could be located everywhere and provide his services with a reduced risk of in-place maintenance.<br>
 		At this point, the two main alternatives are CoAP and WebSockets.
@@ -658,7 +652,7 @@
 
 
 
-		+qualcosa sul planner (intanto qui poi sopra)
+		<!-- +qualcosa sul planner (intanto qui poi sopra)-->
 
 
 
@@ -740,7 +734,7 @@
 					<br/><b>Conditions</b>
 					<ul>
 						<li>The transport trolley moves around the parking-area and arrives in the desired location</li>
-						<li>The INDOOR-area is freed???</li>
+						<li>The INDOOR-area is freed</li> <!-- ??? -->
 						<li></li>
 					</ul>
 				</td>
@@ -834,7 +828,8 @@
 
 	<h2>Project</h2>
 	<div class="remark">
-		<!-- dare una motivazione per gli sprint, perchè divido in una certa maniera e perchè faccio uno prima -->
+		The project will be divided in sprint
+
 
 	</div>
 
