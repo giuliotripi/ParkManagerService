@@ -244,7 +244,7 @@
 		<h4>Nouns</h4>
 		<ul>
 			<li><ks>ParkManagerService</ks>: The software system which will implement the required automation functions;</li>
-			<li><ks>DDR robot</ks>: Differential Drive Robot. Has the form of a square of side length RD; (link al file del robot da costruire)</li>
+			<li><ks>DDR robot</ks>: Differential Drive Robot. Has the form of a square of side length RD (<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/main/it.unibo.qak21.basicrobot/userDocs/LabNanoRobot.html">link</a>)</li>
 			<li><ks>transport trolley</ks>: A DDR robot which is used to move cars from the INDOOR to the selected
 				parking-slot. It can be in three different states: <k>idle</k>, the robot is waiting for the next command,
 				<k>working</k>, the robot is moving around the parking-area, executing a command, <k>stopped</k>, the robot
@@ -316,6 +316,7 @@
 				control of it;</li>
 			<li>The transport trolley cannot be stopped if TA <= TMAX;</li>
 			<li>It is impossible that a customer reaches the INDOOR without having reserved a parking slot from the GUI;</li>
+			<li>It is impossible that a customer reserves a parking slot and do not show up at the parking area;</li>
 			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message;</li>
 			<li>When parking manager starts the transport trolley, it should continue the move it was doing before stop;</li>
 			<li>Temperature is in Celsius and mass in kilograms;</li>
@@ -479,17 +480,17 @@
 		<h3>List of requirements</h3>
 		<h4>Functional requirements</h4>
 		<ol class="custom functional">
-			<li>The client can book a parking slot through ParkServiceGUI.</li>
-			<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0.</li>
-			<li>The client notifies the ParkManagerService when he leaves the car in front of the INDOOR.</li>
+			<li>The client can book a parking slot through ParkServiceGUI</li>
+			<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0</li>
+			<li>The client notifies the ParkManagerService when he leaves the car in front of the INDOOR</li>
 			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the
-				OUTDOOR by sending command to a transport trolley.</li>
-			<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later.</li>
-			<li>The system must understand if a client's car is not in front of the INDOOR during F3</li>
+				OUTDOOR by sending command to a transport trolley</li>
+			<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later</li>
+			<li>The system must understand if the client's car is not in front of the INDOOR during F3</li>
 			<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
 				available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
 				at home or working</li>
-			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message;</li>
+			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message</li>
 			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI</li>
 			<li>The system must infer the correct parking-slot from the corresponding TOKENID</li>
 			<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
