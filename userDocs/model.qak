@@ -59,7 +59,7 @@ Reply    moveDone		: moveDone(MOVE, RESULT)
 
 Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
 
-Request  moveToHome		: moveToHome(X)
+Request  backHome		: backHome(X)
 
 Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
 
@@ -90,10 +90,10 @@ Reply    pickUpReply	: pickUpReply(STATUS)
 // CONTEXTS
 
 Context ctxservice ip [ host= "localhost" port= 8050 ]
-Context ctxclient ip [ host= "localhost" port= 8051 ]
-Context ctxmanager ip [ host= "localhost" port= 8052 ]
-Context ctxrobot ip [ host= "localhost" port= 8053 ]
-
+Context ctxclient ip [ host= "127.0.0.1" port= 8051 ]
+Context ctxmanager ip [ host= "127.0.0.2" port= 8052 ]
+Context ctxrobot ip [ host= "127.0.0.3" port= 8053 ]
+//+uno per ogni sensore
 
 QActor service context ctxservice {
 	[# var Occupati = BooleanArray(6) { false }
@@ -163,7 +163,7 @@ QActor service context ctxservice {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
 					
 			//if there are not other requests
-			request robot -m moveToHome : moveToHome(X)
+			request robot -m backHome : backHome(X)
 				
 		}
 	}
@@ -210,7 +210,7 @@ QActor service context ctxservice {
 			
 			forward dtfree -m startTimer : startTimer(X)
 			//if there are not other requests
-			request robot -m moveToHome : moveToHome(X)
+			request robot -m backHome : backHome(X)
 		}
 	}
 	Transition t5
@@ -291,7 +291,7 @@ QActor robot context ctxrobot { //TODO: ctxrobot
 	Transition t0
 		whenRequest moveToIn -> moveToIn
 		whenRequest moveToSlotIn -> moveToSlotIn
-		whenRequest moveToHome -> moveToHome
+		whenRequest backHome -> backHome
 		whenRequest moveToSlotOut -> moveToSlotOut
 		whenRequest moveToOut -> moveToOut
 	State moveToIn {
@@ -306,10 +306,10 @@ QActor robot context ctxrobot { //TODO: ctxrobot
 		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
 	}
 	Goto s0
-	State moveToHome {
+	State backHome {
 		delay 6000
-		println("[ROBOT] moveToHome3-6")
-		replyTo moveToHome with moveDone : moveDone(moveToHome, 1)
+		println("[ROBOT] backHome3-6")
+		replyTo backHome with moveDone : moveDone(backHome, 1)
 	}
 	Goto s0
 	State moveToSlotOut {
