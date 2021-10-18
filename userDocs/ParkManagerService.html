@@ -315,7 +315,10 @@
 			<li>The fan is automatically activated/deactivated by ParkManagerService. The parking manager cannot overtake
 				control of it;</li>
 			<li>The transport trolley cannot be stopped if TA <= TMAX;</li>
-			<li>It is impossible that a customer reaches the INDOOR without having reserved a parking slot from the GUI;</li>
+			<li>It is impossible that a user reaches the INDOOR without having reserved a parking slot from the GUI;</li>
+			<li>It is impossible that a user parks in the INDOOR area and does not press the CARENTER button;</li>
+			<li>It is impossible that a user notify his interest in entering his auto in the parking-area and later changes
+				his mind and does not park in the parking area;</li>
 			<li>It is impossible that a customer reserves a parking slot and do not show up at the parking area;</li>
 			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see an error message;</li>
 			<li>When parking manager starts the transport trolley, it should continue the move it was doing before stop;</li>
@@ -358,7 +361,22 @@
 				At this point Client3 notify his interest in entering his auto again as if it was just arrived, without
 				record of his waiting. There is not a queue of parking request but just an event of finish of the previous one.</li>
 		</ol>
-
+		<ks>User tries to enter while the trolley is stopped</ks><br>
+		<ol>
+			<li>The temperature goes above TMAX</li>
+			<li>The parking-manager stops the transport trolley</li>
+			<li>Client1 notify his interest in entering his auto in the parking-area or press CARENTER. Client1 receive
+				a notice message from the application stating that the system is temporary unavailable and that the
+				web page will reload automatically as soon as the system is available again.</li>
+			<li>Client2 submit the request to pick up his car but receive a notice message from the
+				application stating that the system is temporary unavailable and that his
+				request is in queue. The request will be served when the previous ends.</li>
+			<li>The parking-manager restart the trolley as soon as the temperature goes below TMAX</li>
+			<li>Without further interaction by Client2, ParkManagerService fulfills his request.</li>
+			<li>The application of Client1 notify him that it is now possible to try to start the parking phase.
+				At this point Client1 notify his interest in entering his auto again as if it was just arrived, without
+				record of his waiting. There is not a queue of parking request but just an event of finish of the previous one.</li>
+		</ol>
 		<h3>Risk analysis</h3>
 
 		There are some risks involving the management of a physical area and storing valuable vehicles, discussed
