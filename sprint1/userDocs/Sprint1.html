@@ -10,13 +10,13 @@
     {
         margin-left:  30px;
         margin-right: 30px;
-    };
+    }
 
     P
     {
         font-family: Tahoma;
         font-size: 10pt;
-    };
+    }
 
     a, a:visited, a:active, a:link, a:hover {
         text-decoration: underline;
@@ -196,27 +196,118 @@
 
 <div class="body">
 
-	<h1>Introduction</h1>
-
 	<h2>Sprint Backlog</h2>
-
-	For this first sprint, we will cover the following requirements:
-	<ul>
-		<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0 (<k>F2</k>)</li>
-		<li>The client notifies the ParkManagerService when he leaves the car in front of the INDOOR (<k>F3</k>)</li>
-		<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later (<k>F5</k>)</li>
-		<li>The system must understand if the client's car is not in front of the INDOOR during F3 (<k>F6</k>)</li>
-		<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
-			available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
-			at home or working (<k>F7</k>)</li>
-		<li>The system must infer the correct parking-slot from the corresponding TOKENID (<k>F10</k>)</li>
-		<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
-			don't detect a car in front of the OUTDOOR, and the transport trolley is either at home or working (<k>F11</k>)</li>
-	</ul>
-
+	<div class="remark">
+		<!-- TODO: add link to the requirements -->
+		In this first sprint, we will focus on the parking and pick-up logic, without considering the GUI and the trolley,
+		which will be mocked.
+		Below is reported the full list of requirements which will be covered:<br/>
+		<ul>
+			<li>The system sends the client an id of the parking-slot if there are slots available, otherwise it sends 0 (<k>F2</k>)</li>
+			<li>The client notifies the ParkManagerService when he leaves the car in front of the INDOOR (<k>F3</k>)</li>
+			<li>The system should provide a unique identifier to the client (TOKENID), in order to retrieve the car later (<k>F5</k>)</li>
+			<li>The system must understand if the client's car is not in front of the INDOOR during F3 (<k>F6</k>)</li>
+			<li>The system can accept the request of a client to park in there only if there is at least one parking-slot
+				available, the weigthsensor don't detect a car in front of the INDOOR, and the transport trolley is either
+				at home or working (<k>F7</k>)</li>
+			<li>The system must infer the correct parking-slot from the corresponding TOKENID (<k>F10</k>)</li>
+			<li>The system can accept the request of a client to pick up the car only if the TOKENID is valid, the outsonar
+				don't detect a car in front of the OUTDOOR, and the transport trolley is either at home or working (<k>F11</k>)</li>
+		</ul>
+	</div>
 
 
 	<h2>Sprint</h2>
+	<div class="remark">
+
+		Before starting this sprint, a brief consideration on the ParkManagerService. Until now, we have considered it as
+		a single entity, which was responsible for all the logic of the ParkingArea. Based on the divide-et-impera design
+		principle, we have decided to split the service into two smaller services: the ParkingService, responsible for the
+		interactions with the clients, and the ManagerService, responsible for the interactions with the manager.
+		Considering the requirements listed in the sprint backlog, in this sprint we will cover only the ParkingService.
+
+		<h3>ParkingService</h3>
+		<!-- Moore finite state machine -->
+		As the actors we have been using are based on the concept of <a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.qakactor/userDocs/LabQakIntro2021.html">QActor</a>
+		provided by the customer, we can express the ParkingService behavior as a Moore State Machine. <br/>
+
+		From its initial state <k>waiting</k>, the ParkingService can receive enterRequest, carEnter or pickupRequest,
+		and it will go respectively in the states <k>handleEnterRequest</k>, <k>handleCarEnter</k> or <k>handlePickupRequest</k>.
+		After serving one of these request, it will return immediately to <k>waiting</k>. The detailed action that are
+		executed in these states can be read from the UML diagram below.
+		In practice, when modelling these state with the qak language, it was necessary to divide these states even more
+		every time we needed to read a state from a sensor, but for the sake of simplicity, the following diagram kept
+		these as macro states. The full model can be found <a href="../src/model.qak">here</a>.
+		<!-- TODO: link da inserire -->
+
+		<!-- gli stati sono stati spezzati in stati più piccoli, motivazione invio di messaggi  -->
+		<!-- per il trolley leggo solo lo stato, per il sensore invece invio una richiesta, quindi ho bisogno di due stati separati -->
+
+		<br/></br>
+		<img src="img/ParkingServiceFSM.png" style="max-width: 95%" alt="ParkingService FSM">
+		<!-- UML graph, with explanation for the classes and interaction -->
+
+		<!-- reserved, poichè posso gestire due handleRequest contemporaneamente devo distinguere tra occpuato e riservato
+		in quanto in carEnter per entrare devo specificare il posto (aggiungere un token personale per evitare manomissioni?-->
+
+
+
+		<h3>State Representation</h3>
+		<table>
+			<tr>
+				<th>
+					The internal state of the parkingArea was represented as a map, whose keys are the id of the parkingSlot. Each
+					parkingSlot (modelled as the kotlin class ParkingSlotInfo), holds as information whether it is reserved, whether
+					it is occupied and the client's token in case it is occupied.<br/>
+
+					We differentiated between the concepts of reserved and occupied because, as we clarified with the customer, the
+					client can send the request to park even if it is physically distant. So, a parkingSlot becomes reserved after
+					the enterRequest, while it becomes occupied only after the car is deposited inside the parking. In this way we
+					can deal with clients entering the parking in a different order from that of their request.</br>
+
+					<!-- TODO: riformulare sotto, JSON o binario? -->
+					To maintain persistence between different session, we decided to save the state in a JSON file. We opted for a
+					simple file instead of a database because the state is small and because it is less resource demanding. However,
+					we have made the design modular, so if in the future a database will be needed, you will only need to reimplement
+					the interface.
+				</th>
+
+				<th>
+					<img src="img/StateUML.png" alt="State UML">
+				</th>
+			</tr>
+		</table>
+
+		<!-- TODO: inserire immagine a lato -->
+
+
+
+
+
+		<!-- mappa, posti riservati, controllo posto riservato in carEnter -->
+
+		<h3>WeightSensor</h3>
+
+		<!-- UML graph, device mocked -->
+
+		<h3>OutSonar</h3>
+
+		<!-- UML graph, device mocked -->
+
+	</div>
+
+
+	<h2>Testing</h2>
+	<div class="remark">
+		<!-- prima o dopo della sprint review? -->
+	</div>
+
+
+	<h2>Sprint Review</h2>
+	<div class="remark">
+		<!-- present current work, introduce future developments -->
+	</div>
+
 
 
 </div>
