@@ -335,7 +335,7 @@
 					<td>error(valuesnotvalid)</td>
 				</tr>
 				<tr>
-					<td>Request</td>
+					<th>Request</th>
 					<td>pickUpRequest</td>
 					<td>pickUpRequest(TOKENID)</td>
 				</tr>
@@ -386,19 +386,19 @@
 			</tr>
 			</thead>
 			<tbody>
-			<tr style="color: red">
-				<th>Dispatch</th>
-				<td>setValue</td>
-				<td>sensorValue(VALUE)</td>
-			</tr>
 			<tr>
-				<th>Request</th>
+				<td>Request</td>
 				<td>getValue</td>
 				<td>getValue(_)</td>
 			</tr>
 			<tr>
 				<td>Reply</td>
 				<td>sensorState</td>
+				<td>sensorValue(VALUE)</td>
+			</tr>
+			<tr style="color: red">
+				<td>Dispatch</td>
+				<td>setValue</td>
 				<td>sensorValue(VALUE)</td>
 			</tr>
 			</tbody>
@@ -414,7 +414,9 @@
 		Since we still did not implement the web part, our testing remained similar to what we prevented in the Test Plan
 		part of sprint0.<br><br>
 
-		It was added a test to check that the mock sensors were working storing the value sent by the testing code.<br><br>
+		It was added a test to check that the mock sensors were working storing the value sent by the testing code.
+		And another test to check that the persistence has the correct number of records and that the update
+		function works well.<br><br>
 
 
 
@@ -426,9 +428,9 @@
 	<div class="remark">
 		<!-- present current work, introduce future developments -->
 	</div>
-
-
-
+	<div class="remark" style="background-color: white; text-align: center">
+		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
+	</div>
 </div>
 
 <div style="background-color:rgba(86, 56, 253, 0.9); width:60%;text-align:left;color:white">
