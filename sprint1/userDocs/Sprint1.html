@@ -189,7 +189,7 @@
 </style>
 
 <head>
-
+	<link rel="icon" href="../../sprint0/userDocs/img/favicon.png">
 	<title>Sprint1</title></head>
 
 <body>
@@ -242,7 +242,7 @@
 		these as macro states. The full model can be found <a href="../src/model.qak">here</a>.
 
 
-		<br/><br/>
+		<br><br>
 		<img src="img/ParkingServiceFSM.png" style="max-width: 95%" alt="ParkingService FSM">
 		<!-- UML graph, with explanation for the classes and interaction -->
 
@@ -394,7 +394,7 @@
 			</tr>
 			<tr>
 				<td>Reply</td>
-				<td>sensorState</td>
+				<td>sensorValue</td>
 				<td>sensorValue(VALUE)</td>
 			</tr>
 			<tr style="color: red">
@@ -411,14 +411,11 @@
 	<h2>Testing</h2>
 	<div class="remark">
 		Since we still did not implement the web part, our testing remained similar to what we prevented in the Test Plan
-		part of sprint0(Test0).<br><br>
+		part of <a href="../src/kotlinCode/eu/musarellatripi/test/TestPlan0.kt">sprint0</a>.<br><br>
 
 		It was added a test to check that the mock sensors were working storing the value sent by the testing code.
-		And another test to check that the persistence has the correct number of records and that the update
-		function works well(TestDB).<br><br>
-
-
-
+		And another test (<a href="../src/kotlinCode/eu/musarellatripi/test/TestDB.kt">TestDB</a>) to check that the
+		persistence has the correct number of records and that the update function works well.<br><br>
 
 	</div>
 
