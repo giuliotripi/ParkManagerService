@@ -367,6 +367,43 @@
 
 		<h3>WeightSensor and OutSonar</h3>
 
+		To test all the requirements listed in this sprint backlog, it was necessary to mock those two sensors.<br>
+		Since we can assume that we will use a sensor coded in qak when the physical ones will be deployes, we used
+		a qak actor even for the mock.<br>
+
+		The structure of the sensor is the same that we plan to use in the final application. We only added a dispatch
+		and a state that allows to set the value of the sensor.
+
+		Both sensors reply to the following messages. The red one is only for testing purpose and will be removed
+		in the non-mock implementation.
+
+		<table>
+			<thead>
+			<tr>
+				<th>MsgType</th>
+				<th>MsgId</th>
+				<th>MsgContent</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr style="color: red">
+				<th>Dispatch</th>
+				<td>setValue</td>
+				<td>sensorValue(VALUE)</td>
+			</tr>
+			<tr>
+				<th>Request</th>
+				<td>getValue</td>
+				<td>getValue(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>sensorState</td>
+				<td>sensorValue(VALUE)</td>
+			</tr>
+			</tbody>
+		</table>
+
 		<!-- UML graph, device mocked -->
 
 	</div>
@@ -374,7 +411,14 @@
 
 	<h2>Testing</h2>
 	<div class="remark">
-		<!-- prima o dopo della sprint review? -->
+		Since we still did not implement the web part, our testing remained similar to what we prevented in the Test Plan
+		part of sprint0.<br><br>
+
+		It was added a test to check that the mock sensors were working storing the value sent by the testing code.<br><br>
+
+
+
+
 	</div>
 
 
