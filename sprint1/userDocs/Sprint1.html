@@ -242,7 +242,7 @@
 		these as macro states. The full model can be found <a href="../src/model.qak">here</a>.
 
 
-		<br/></br>
+		<br/><br/>
 		<img src="img/ParkingServiceFSM.png" style="max-width: 95%" alt="ParkingService FSM">
 		<!-- UML graph, with explanation for the classes and interaction -->
 
@@ -263,7 +263,7 @@
 					customer, the client can send the request to park even if it is physically distant. So, a parkingSlot
 					becomes reserved after the enterRequest, while it becomes occupied only after the car is deposited
 					inside the parking. In this way we can deal with clients entering the parking in a different order
-					from that of their enterRequest.</br>
+					from that of their enterRequest.<br/>
 
 					To maintain persistence between different startup of the system, we decided to save the state in a
 					JSON file. We opted for a simple file instead of a database because the state is small and because
@@ -365,10 +365,11 @@
 		All the requests now sent to <k>parkingservice</k> by the test in the future will be sent by the webserver
 		that receives the requests by the user and forwards them to the qak actor.
 
+
 		<h3>WeightSensor and OutSonar</h3>
 
 		To test all the requirements listed in this sprint backlog, it was necessary to mock those two sensors.<br>
-		Since we can assume that we will use a sensor coded in qak when the physical ones will be deployes, we used
+		Since we can assume that we will use a sensor coded in qak when the physical ones will be deployed, we used
 		a qak actor even for the mock.<br>
 
 		The structure of the sensor is the same that we plan to use in the final application. We only added a dispatch
@@ -404,19 +405,17 @@
 			</tbody>
 		</table>
 
-		<!-- UML graph, device mocked -->
-
 	</div>
 
 
 	<h2>Testing</h2>
 	<div class="remark">
 		Since we still did not implement the web part, our testing remained similar to what we prevented in the Test Plan
-		part of sprint0.<br><br>
+		part of sprint0(Test0).<br><br>
 
 		It was added a test to check that the mock sensors were working storing the value sent by the testing code.
 		And another test to check that the persistence has the correct number of records and that the update
-		function works well.<br><br>
+		function works well(TestDB).<br><br>
 
 
 
