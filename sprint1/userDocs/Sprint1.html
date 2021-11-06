@@ -222,8 +222,10 @@
 
 		Before starting this sprint, a brief consideration on the ParkManagerService. Until now, we have considered it as
 		a single entity, which was responsible for all the logic of the ParkingArea. Based on the divide-et-impera design
-		principle, we have decided to split the service into two smaller services: the ParkingService, responsible for the
-		interactions with the clients, and the ManagerService, responsible for the interactions with the manager.
+		principle, we have decided to split the service into three smaller services: the ParkingService, responsible for the
+		interactions with the clients, the ManagerService, responsible for the interactions with the manager, and the
+		SensorService, responsible for handling the events and dispatches sent by the sensors. This breakdown of the
+		ParkManagerService is not final, and can undergo future changes in the next Sprints.
 		Considering the requirements listed in the sprint backlog, in this sprint we will cover only the ParkingService.
 
 		<h3>ParkingService</h3>
@@ -231,17 +233,14 @@
 		As the actors we have been using are based on the concept of <a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.qakactor/userDocs/LabQakIntro2021.html">QActor</a>
 		provided by the customer, we can express the ParkingService behavior as a Moore State Machine. <br/>
 
-		From its initial state <k>waiting</k>, the ParkingService can receive enterRequest, carEnter or pickupRequest,
+		From its initial state <k>idle</k>, the ParkingService can receive enterRequest, carEnter or pickupRequest,
 		and it will go respectively in the states <k>handleEnterRequest</k>, <k>handleCarEnter</k> or <k>handlePickupRequest</k>.
-		After serving one of these request, it will return immediately to <k>waiting</k>. The detailed action that are
+		After serving one of these request, it will return immediately to <k>idle</k>. The detailed action that are
 		executed in these states can be read from the UML diagram below.
 		In practice, when modelling these state with the qak language, it was necessary to divide these states even more
 		every time we needed to read a state from a sensor, but for the sake of simplicity, the following diagram kept
 		these as macro states. The full model can be found <a href="../src/model.qak">here</a>.
-		<!-- TODO: link da inserire -->
 
-		<!-- gli stati sono stati spezzati in stati più piccoli, motivazione invio di messaggi  -->
-		<!-- per il trolley leggo solo lo stato, per il sensore invece invio una richiesta, quindi ho bisogno di due stati separati -->
 
 		<br/></br>
 		<img src="img/ParkingServiceFSM.png" style="max-width: 95%" alt="ParkingService FSM">
@@ -255,42 +254,118 @@
 		<h3>State Representation</h3>
 		<table>
 			<tr>
-				<th>
-					The internal state of the parkingArea was represented as a map, whose keys are the id of the parkingSlot. Each
-					parkingSlot (modelled as the kotlin class ParkingSlotInfo), holds as information whether it is reserved, whether
-					it is occupied and the client's token in case it is occupied.<br/>
+				<td>
+					The internal state of the parkingArea was represented as a map, whose keys are the id of the parkingSlot.
+					Each parkingSlot (modelled as the kotlin class ParkingSlotInfo), holds as information whether it is
+					reserved, whether it is occupied and the client's token in case it is occupied.<br/>
 
-					We differentiated between the concepts of reserved and occupied because, as we clarified with the customer, the
-					client can send the request to park even if it is physically distant. So, a parkingSlot becomes reserved after
-					the enterRequest, while it becomes occupied only after the car is deposited inside the parking. In this way we
-					can deal with clients entering the parking in a different order from that of their request.</br>
+					We differentiated between the concepts of reserved and occupied because, as we clarified with the
+					customer, the client can send the request to park even if it is physically distant. So, a parkingSlot
+					becomes reserved after the enterRequest, while it becomes occupied only after the car is deposited
+					inside the parking. In this way we can deal with clients entering the parking in a different order
+					from that of their enterRequest.</br>
 
-					<!-- TODO: riformulare sotto, JSON o binario? -->
-					To maintain persistence between different session, we decided to save the state in a JSON file. We opted for a
-					simple file instead of a database because the state is small and because it is less resource demanding. However,
-					we have made the design modular, so if in the future a database will be needed, you will only need to reimplement
-					the interface.
-				</th>
+					To maintain persistence between different startup of the system, we decided to save the state in a
+					JSON file. We opted for a simple file instead of a database because the state is small and because
+					it is less resource demanding. However, we have made the design modular, so if in the future a database
+					will be needed, you will only need to reimplement the interface.
+				</td>
 
-				<th>
+				<td>
 					<img src="img/StateUML.png" alt="State UML">
-				</th>
+				</td>
 			</tr>
 		</table>
 
-		<!-- TODO: inserire immagine a lato -->
+		<!-- h3 Interaction with the qactor (sia i messaggi che adesso inviamo ai qak che il fatto che poi le richieste adesso inviate
+		dai test verranno inviate dallo spring) -->
+		<h3>Interaction with Qactor</h3>
 
+		The qak model is configured to listen for messages on port 8050. The customer already provided us with some classes
+		to use for the communication with the qactor. They can be found, together with some other classes we introduce,
+		reported below.
 
+		<!-- grafico -->
 
+		We defined a set of messages that the actors use to communicate.
 
+		The <k>parkingservice</k> actor listens for the following messages:
+		<table>
+			<thead>
+			<tr>
+				<th>MsgType</th>
+				<th>MsgId</th>
+				<th>MsgContent</th>
+			</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Request</th>
+					<td>enterRequest</td>
+					<td>enterRequest(_)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>slotNum</td>
+					<td>slotNum(SLOTNUM)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(weighttoohigh)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(trolleystopped)</td>
+				</tr>
+				<tr>
+					<th>Request</th>
+					<td>carEnter</td>
+					<td>carEnter(SLOTNUM)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>token</td>
+					<td>token(TOKENID)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(valuesnotvalid)</td>
+				</tr>
+				<tr>
+					<td>Request</td>
+					<td>pickUpRequest</td>
+					<td>pickUpRequest(TOKENID)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>pickUpReply</td>
+					<td>pickUpReply(STATUS)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(wrongtoken)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(outdoorbusy)</td>
+				</tr>
+				<tr>
+					<td>Reply</td>
+					<td>error</td>
+					<td>error(trolleystopped)</td>
+				</tr>
+			</tbody>
+		</table>
+		<br>
+		All the requests now sent to <k>parkingservice</k> by the test in the future will be sent by the webserver
+		that receives the requests by the user and forwards them to the qak actor.
 
-		<!-- mappa, posti riservati, controllo posto riservato in carEnter -->
-
-		<h3>WeightSensor</h3>
-
-		<!-- UML graph, device mocked -->
-
-		<h3>OutSonar</h3>
+		<h3>WeightSensor and OutSonar</h3>
 
 		<!-- UML graph, device mocked -->
 
