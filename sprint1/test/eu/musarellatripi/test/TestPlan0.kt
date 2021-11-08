@@ -20,8 +20,8 @@ import org.junit.Assert
 import org.eclipse.californium.core.CoapClient
 import org.eclipse.californium.core.coap.MediaTypeRegistry
 import eu.musarellatripi.sensors.Values
-import eu.musarellatripi.sensors.CoapWeightSensor
-import eu.musarellatripi.sensors.CoapSonarSensor
+import eu.musarellatripi.sensors.CoapTalkerWeightSensor
+import eu.musarellatripi.sensors.CoapTalkerSonarSensor
 
 class TestPlan0 {
 	companion object{
@@ -83,31 +83,17 @@ class TestPlan0 {
 	@Test
 	fun checkMockWorking() {
 		println("STARTING checkMockWorking")
-		setWeight(30);
-		val nw = CoapWeightSensor().requestValue()
+		TestUtils.setWeight(30);
+		val nw = CoapTalkerWeightSensor().requestValue()
 		Assert.assertEquals(30, nw.toInt())
-		setSonar(0);
-		val ns = CoapSonarSensor().requestValue()
+		TestUtils.setSonar(0);
+		val ns = CoapTalkerSonarSensor().requestValue()
 		Assert.assertEquals(0, ns.toInt())
-	}
-	fun setWeight(weight: Int) {
-		val client: CoapClient = CoapClient("coap://localhost:8050/ctxservice/weight")
-		val msg = ApplMessage("setValue", ApplMessageType.dispatch.toString(), "external", "weight", "sensorValue(${weight})", "0")
-		val respPut = client.put(msg.toString(), MediaTypeRegistry.TEXT_PLAIN)
-		println(respPut.getResponseText())
-		println(respPut.getCode())
-	}
-	fun setSonar(value: Int) {
-		val client: CoapClient = CoapClient("coap://localhost:8050/ctxservice/sonar")
-		val msg = ApplMessage("setValue", ApplMessageType.dispatch.toString(), "external", "sonar", "sensorValue(${value})", "0")
-		val respPut = client.put(msg.toString(), MediaTypeRegistry.TEXT_PLAIN)
-		println(respPut.getResponseText())
-		println(respPut.getCode())
 	}
 	@Test
 	fun testRequestSlot() {
 		println("STARTING testRequestSlot")
-		setWeight(0);
+		TestUtils.setWeight(0);
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
 		for(i in 1..6) {
@@ -149,7 +135,7 @@ class TestPlan0 {
 			
 			//NOW I START WITH carEnter
 			
-			setWeight(Values.weightThreshold + 100);
+			TestUtils.setWeight(Values.weightThreshold + 100);
 			
 			coapClient = CoapTalker("coap://localhost:8050/ctxservice/parkingservice")
 			val resp2 = coapClient.request(ApplMessage("carEnter", ApplMessageType.request.toString(), "external", "parkingservice", "carEnter(${slotNum})", "0"))
@@ -171,7 +157,7 @@ class TestPlan0 {
 	@Test
 	fun testRequestSlotNoSlotsFree() {
 		println("STARTING testRequestSlotNoSlotsFree")
-		setWeight(0);
+		TestUtils.setWeight(0);
 		
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		for(i in 1..6) {
@@ -194,7 +180,7 @@ class TestPlan0 {
 			
 			//NOW I START WITH carEnter
 			
-			setWeight(Values.weightThreshold + 100);
+			TestUtils.setWeight(Values.weightThreshold + 100);
 			
 			coapClient = CoapTalker("coap://localhost:8050/ctxservice/parkingservice")
 			val resp2 = coapClient.request(ApplMessage("carEnter", ApplMessageType.request.toString(), "external", "parkingservice", "carEnter(${slotNum})", "0"))
@@ -211,7 +197,7 @@ class TestPlan0 {
 	fun testRequestSlotIndoorOccupied() {
 		println("STARTING testRequestSlotIndoorOccupied")
 		
-		setWeight(Values.weightThreshold + 100);
+		TestUtils.setWeight(Values.weightThreshold + 100);
 		
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
@@ -233,7 +219,7 @@ class TestPlan0 {
 	fun testClientPickup() {
 		println("STARTING testClientPickup")
 		
-		setSonar(Values.sonarThreshold + 100)
+		TestUtils.setSonar(Values.sonarThreshold + 100)
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
 		for(i in 1..6) {
@@ -259,7 +245,7 @@ class TestPlan0 {
 	fun testClientPickupOutdoorOccupied() {
 		println("STARTING testClientPickupOutdoorOccupied")
 		
-		setSonar(0)
+		TestUtils.setSonar(0)
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
 		for(i in 1..6) {
@@ -284,7 +270,7 @@ class TestPlan0 {
 	fun testClientPickupWrongToken() {
 		println("STARTING testClientPickupWrongToken")
 		
-		setSonar(Values.sonarThreshold + 100)
+		TestUtils.setSonar(Values.sonarThreshold + 100)
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
 		for(i in 1..6) {

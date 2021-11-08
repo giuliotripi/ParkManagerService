@@ -345,7 +345,7 @@ QActor parkingservice context ctxservice {
 	State handlePickUp5 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
 
-			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
+			replyTo pickUpRequest with pickUpReply : pickUpReply(ok)
 
 			forward client -m canEnter : canEnter(X)
 
@@ -714,4 +714,5 @@ QActor weight context ctxservice {
 	}
 	Goto idle
 }
+
 

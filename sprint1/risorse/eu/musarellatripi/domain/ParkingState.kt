@@ -9,9 +9,6 @@ class ParkingState() : IParkingState {
     }
 
     init {
-        connect()
-    }
-    public fun connect() {
         if(status.size != 6) { //executed only when not populated
             for(i in 1..6) {
                 status.put(i, ParkingSlotInfo(i, false, ""));

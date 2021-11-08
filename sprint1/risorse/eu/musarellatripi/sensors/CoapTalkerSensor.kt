@@ -8,7 +8,7 @@ import org.eclipse.californium.core.CoapResponse
 
 
 
-abstract class CoapSensor : CoapTalker {
+abstract class CoapTalkerSensor : CoapTalker {
     
 	constructor(url: String) : super(url)
 	

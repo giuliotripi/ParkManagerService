@@ -2,7 +2,7 @@ package eu.musarellatripi.sensors
 
 import org.eclipse.californium.core.CoapClient
 
-class CoapSonarSensor: CoapSensor {
+class CoapTalkerSonarSensor: CoapTalkerSensor {
 	constructor() : super("coap://localhost:8050/ctxservice/sonar")
 	
 
