@@ -16,42 +16,23 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* --------------- MODEL REQUIREMENTS --------------- */
 
-System /*-trace*/ -msglog  parkingservice
+System /*-trace*/ -msglog  parkingsystem
 
 
-Request  getTemp	: getTemp(X)
-Reply    temp		: temp(T)
+//TROLLEY
 
-//TIMER
-
-Dispatch startTimer		: startTimer(_)
-Dispatch stopTimer		: stopTimer(_)
-Event	 timeout		: timeout(_)
-
-// ROBOT
-
-Request  getRobotStatus	: getRobotStatus(X)
-Reply    robotStatus	: robotStatus(STATUS)
-
-Dispatch setRobotStatus	: robotStatus(STATUS)
-
-//Request so this way I know when robot finished task (I could have used two dispatch instead, but this way
-//sounds more linear in a model)
 Request  moveToIn		: moveToIn(X)
+Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
+Request  moveToHome		: moveToHome(X)
+Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
+Request  moveToOut		: moveToOut(X)
 Reply    moveDone		: moveDone(MOVE, RESULT)
 
-Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
+Dispatch stop           : stop(X)
+Dispatch resume         : resume(X)
 
-Request  moveToHome		: moveToHome(X)
-
-Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
-
-Request  moveToOut		: moveToOut(X)
-
-Request stop            : stop(X)
-
-Request resume          : resume(X)
 
 // GUI CLIENT
 
@@ -61,31 +42,26 @@ Reply    slotNum		: slotNum(SLOTNUM)
 Request  carEnter		: carEnter(X)
 Reply    token			: token(TOKENID)
 
-Dispatch canEnter		: canEnter(X)
-
-
 Request  pickUpRequest	: pickUpRequest(TOKENID)
 Reply    pickUpReply	: pickUpReply(STATUS)
-
-// GUI MANAGER
 
 
 
 // CONTEXTS
 
-Context ctxservice ip [ host= "localhost" port= 8050 ]
-Context ctxclient ip [ host= "localhost" port= 8051 ]
-Context ctxmanager ip [ host= "localhost" port= 8052 ]
-Context ctxrobot ip [ host= "localhost" port= 8053 ]
+Context ctxservice ip [ host= "127.0.0.1" port= 8050 ]
+Context ctxclient ip [ host= "127.0.0.2" port= 8051 ]
+Context ctxmanager ip [ host= "127.0.0.3" port= 8052 ]
+Context ctxtrolley ip [ host= "127.0.0.4" port= 8053 ]
 
 
-QActor service context ctxservice {
+QActor parkmanagerservice context ctxservice {
 	[# var Occupati = BooleanArray(6) { false }
 		var SLOTNUM: Int = 0
 		var TOKENID: String = ""
 	#]
 	State s0 initial {
-		println("Service init")
+		println("ParkManagerService init")
 	}
 	Goto idle
 	State idle {
@@ -95,6 +71,9 @@ QActor service context ctxservice {
 		whenRequest enterRequest -> handleEnterRequest
 		whenRequest carEnter -> handleCarEnter
 		whenRequest pickUpRequest -> handlePickUp
+		whenRequest startFan -> handleStartFan
+		whenRequest stopFan -> handleStopFan
+		whenRequest readStatus -> handleReadStatus
 	
 	State handleEnterRequest {
 		//TOASK: cosa succede qui se il sensore di peso dice che c'è una macchina sopra?
@@ -129,8 +108,8 @@ QActor service context ctxservice {
 			SLOTNUM += 1
 			TOKENID = "t" + SLOTNUM
 		#]
-		println("[SERVICE] Generated TOKENID: $TOKENID")
-		request robot -m moveToIn : moveToIn(X)
+		println("[PARKMANAGERSERVICE] Generated TOKENID: $TOKENID")
+		request trolley -m moveToIn : moveToIn(X)
 		
 	}
 	Transition t1
@@ -138,7 +117,7 @@ QActor service context ctxservice {
 	State handleCarEnter1 {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
 			replyTo carEnter with token : token($TOKENID)
-			request robot -m moveToSlotIn : moveToSlotIn($SLOTNUM)
+			request trolley -m moveToSlotIn : moveToSlotIn($SLOTNUM)
 		}
 	}
 	Transition t2
@@ -147,14 +126,14 @@ QActor service context ctxservice {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
 					
 			//if there are not other requests
-			request robot -m moveToHome : moveToHome(X)
+			request trolley -m moveToHome : moveToHome(X)
 				
 		}
 	}
 	Transition t2b
 		whenReply moveDone -> handleCarEnter3
 	State handleCarEnter3 {
-		println("[SERVICE] carEnterRequest finished")
+		println("[PARKMANAGERSERVICE] carEnterRequest finished")
 	}
 	Goto idle
 	/*Goto handleCarEnterKo if [# SLOTNUM == 0 #]
@@ -171,7 +150,7 @@ QActor service context ctxservice {
 			[#
 				SLOTNUM = payloadArg(0)[1].toInt()
 			#]
-			request robot -m moveToSlotOut : moveToSlotOut($SLOTNUM)
+			request trolley -m moveToSlotOut : moveToSlotOut($SLOTNUM)
 			
 		}
 	}
@@ -179,7 +158,7 @@ QActor service context ctxservice {
 		whenReply moveDone -> handlePickUp1
 	State handlePickUp1 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
-				request robot -m moveToOut : moveToOut(X)
+				request trolley -m moveToOut : moveToOut(X)
 				
 			}
 	}
@@ -187,20 +166,16 @@ QActor service context ctxservice {
 		whenReply moveDone -> handlePickUp2
 	State handlePickUp2 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
-			
 			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
-			
-			forward client -m canEnter : canEnter(X)
-			
-			forward dtfree -m startTimer : startTimer(X)
+
 			//if there are not other requests
-			request robot -m moveToHome : moveToHome(X)
+			request trolley -m moveToHome : moveToHome(X)
 		}
 	}
 	Transition t5
 		whenReply moveDone -> handlePickUp3
 	State handlePickUp3 {
-		println("[SERVICE] pickUpRequest finished")
+		println("[PARKMANAGERSERVICE] pickUpRequest finished")
 	}
 	Goto idle
 }
@@ -213,7 +188,7 @@ QActor client context ctxclient { // TODO: ctxclient
 	State s0 initial {
 		println("clientGUI init")
 		delay 5000
-		request service -m enterRequest : enterRequest(_)
+		request parkmanagerservice -m enterRequest : enterRequest(_)
 	}
 	Transition t1
 		whenReply slotNum -> printslotnum
@@ -223,7 +198,7 @@ QActor client context ctxclient { // TODO: ctxclient
 			println("[CLIENT] Received ${payloadArg(0)}")
 		}
 		println("[CLIENT] received")
-		request service -m carEnter : carEnter(_)
+		request parkmanagerservice -m carEnter : carEnter(_)
 	}
 	Transition t2
 		whenReply token -> printtoken
@@ -237,38 +212,28 @@ QActor client context ctxclient { // TODO: ctxclient
 		println("[CLIENT] Going out for a trip")
 		delay 15000
 		println("[CLIENT] Trying to pick up my car")
-		request service -m pickUpRequest : pickUpRequest(t0)
+		request parkmanagerservice -m pickUpRequest : pickUpRequest(t0)
 	}
 	Transition t3
 		whenReply pickUpReply -> pickUp
 	State pickUp {
-		
 		println("[CLIENT] CAR PICKED UP")
 	}
-	Transition t4
-		whenMsg canEnter -> canEnter
-	State canEnter {
-		println("[CLIENT] There is a new free parking slot")
-	}
+
 }
 
+// Draft not yet implemented in the requirements analisys
 QActor manager context ctxservice { // TODO: ctxmanager
 	State s0 initial {
 		println("managerGUI init")
 	}
-	Transition t0
-		whenEvent timeout -> timeout
-	
-	State timeout {
-		println("TIMEOUT")
-	}
 }
 
 // ----------------------------------
-//		ACTORS FOR ROBOT
+//		ACTOR FOR TRANSPORT TROLLEY
 // ----------------------------------
 
-QActor robot context ctxrobot { //TODO: ctxrobot
+QActor trolley context ctxtrolley { //
 	State s0 initial {
 		
 	}
@@ -280,59 +245,36 @@ QActor robot context ctxrobot { //TODO: ctxrobot
 		whenRequest moveToOut -> moveToOut
 	State moveToIn {
 		delay 6000
-		println("[ROBOT] moveToIn1")
+		println("[TROLLEY] moveToIn1")
 		replyTo moveToIn with moveDone : moveDone(moveToIn, 1)
 	}
 	Goto s0
 	State moveToSlotIn {
 		delay 6000
-		println("[ROBOT] moveToSlotIn2")
+		println("[TROLLEY] moveToSlotIn2")
 		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
 	}
 	Goto s0
 	State moveToHome {
 		delay 6000
-		println("[ROBOT] moveToHome3-6")
+		println("[TROLLEY] moveToHome3-6")
 		replyTo moveToHome with moveDone : moveDone(moveToHome, 1)
 	}
 	Goto s0
 	State moveToSlotOut {
 		delay 6000
-		println("[ROBOT] moveToSlotOut4")
+		println("[TROLLEY] moveToSlotOut4")
 		replyTo moveToSlotOut with moveDone : moveDone(moveToSlotOut, 1)
 	}
 	Goto s0
 	State moveToOut {
 		delay 6000
-		println("[ROBOT] moveToOut5")
+		println("[TROLLEY] moveToOut5")
 		replyTo moveToOut with moveDone : moveDone(moveToOut, 1)
 	}
 	Goto s0
 }
 
-// ----------------------------------
-//		ACTORS FOR TIMEOUT
-// ----------------------------------
-
-QActor dtfree context ctxservice {
-	State idle initial {
-		
-	}
-	Transition t0
-		whenMsg startTimer -> timing
-	State timing {
-		
-	}
-	//TODO: decidere come gestire la liberazione: il timer controlla in continuazione
-	//e quando si libera manda un evento o il sensore (meglio)?
-	Transition t1 whenTime 60000 -> timeout
-		whenMsg stopTimer -> idle
-		whenEvent outdoorAreaNowFree -> idle
-	State timeout {
-		emit timeout : timeout(_)
-	}
-	Goto idle
-}
 
 // ----------------------------------
 //		ACTORS FOR SENSORS & FAN

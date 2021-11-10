@@ -16,28 +16,33 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* SPRINT0 MODEL */
 
 System /*-trace*/ -msglog  parkingservice
 
 
-Request  getTemp	: getTemp(X)
-Reply    temp		: temp(T)
-
 // SENSORS & FAN
 
-Request  getSonar	: getSonar(X)
-Reply    sonarState	: sonarState(STATE)
-
-Event outdoorAreaNowFree : outdoorAreaNowFree(X)
+Request  getDistance    : getDistance(X)
+Reply    distance       : distance(VALUE)
 
 Request  getWeight		: getWeight(X)
-Reply    weightState	: weightState(WEIGHT)
+Reply    weight	: weight(VALUE)
 
-Request  getFanState	: getFanState(X)
-Reply    fanState		: fanState(STATE)
+Request  getTemperature	: getTemperature(X)
+Reply    temperature	: temperature(VALUE)
 
-Dispatch setFanOn		: setFanOn(X)
-Dispatch setFanOff		: setFanOff(X)
+Event carArrivedIndoor  : carArrivedIndoor(X)
+Event carLeftIndoor     : carLeftIndoor(X)
+Event carArrivedOutdoor : carArrivedOutdoor(X)
+Event carLeftOutdoor    : carLeftOutdoor(X)
+
+Event aboveTMAX : aboveTMAX()
+Event underTMAX : underTMAX()
+
+Dispatch startFan		: startFan(X)
+Dispatch stopFan		: stopFan(X)
+
 
 //TIMER
 
@@ -45,15 +50,14 @@ Dispatch startTimer		: startTimer(_)
 Dispatch stopTimer		: stopTimer(_)
 Event	 timeout		: timeout(_)
 
-// ROBOT
+
+//TRANSPORT TROLLEY
 
 Request  getRobotStatus	: getRobotStatus(X)
 Reply    robotStatus	: robotStatus(STATUS)
 
 Dispatch setRobotStatus	: robotStatus(STATUS)
 
-//Request so this way I know when robot finished task (I could have used two dispatch instead, but this way
-//sounds more linear in a model)
 Request  moveToIn		: moveToIn(X)
 Reply    moveDone		: moveDone(MOVE, RESULT)
 
@@ -65,9 +69,9 @@ Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
 
 Request  moveToOut		: moveToOut(X)
 
-Request stop            : stop(X)
+Dispatch stop            : stop(X)
+Dispatch resume          : resume(X)
 
-Request resume          : resume(X)
 
 // GUI CLIENT
 
@@ -205,7 +209,7 @@ QActor service context ctxservice {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
 			
 			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
-			
+
 			forward client -m canEnter : canEnter(X)
 			
 			forward dtfree -m startTimer : startTimer(X)
@@ -343,7 +347,7 @@ QActor dtfree context ctxservice {
 	//e quando si libera manda un evento o il sensore (meglio)?
 	Transition t1 whenTime 60000 -> timeout
 		whenMsg stopTimer -> idle
-		whenEvent outdoorAreaNowFree -> idle
+		whenEvent carLeftOutdoor -> idle
 	State timeout {
 		emit timeout : timeout(_)
 	}
@@ -359,13 +363,13 @@ QActor thermometer context ctxservice {
   		 println("Thermometer init")
 	}
 	Transition t0 
-		whenRequest getTemp -> handleRequest
+		whenRequest getTemperature -> handleRequest
   	
 	State handleRequest {
-		replyTo getTemp with temp : temp(20) // TODO: random temperature
+		replyTo getTemperature with temperature : temperature(20) // TODO: random temperature
    	}
 	Transition t1
-		whenRequest getTemp -> handleRequest
+		whenRequest getTemperature -> handleRequest
 }
 
 QActor sonar context ctxservice {
@@ -373,13 +377,13 @@ QActor sonar context ctxservice {
   		 println("Sonar init")
 	}
 	Transition t0 
-		whenRequest getSonar -> handleRequest
+		whenRequest getDistance -> handleRequest
   	
 	State handleRequest {
-		replyTo getSonar with sonarState : sonarState(0) // TODO: random value
+		replyTo getDistance with distance : distance(0) // TODO: random value
    	}
 	Transition t1
-		whenRequest getSonar -> handleRequest
+		whenRequest getDistance -> handleRequest
 }
 
 QActor fan context ctxservice {
@@ -393,28 +397,14 @@ QActor fan context ctxservice {
 		[# Stato = 0 #]
 		discardMsg On
 	}
-	Transition t1 whenMsg setFanOn -> on
-		//whenMsg disableAlarm -> disabled
-		whenRequest getFanState -> handleGetFanState
+	Transition t1 whenMsg startFan -> on
 	//se qui mi arriva un disable devo scartare il messaggio (o tornare a disabled, non accumularlo, altrimenti poi torna qui)
 	State on {
 		println("Fan on")
 		[# Stato = 1 #]
 		discardMsg On //sto scartando solo i messaggi != disableAlarm e non quelli getAlarmState che magari mi arrivano contemporaneamente?
 	}
-	Transition t2 whenMsg setFanOff -> off
-		whenRequest getFanState -> handleGetFanState
-		//whenEvent onTemperature -> disabled
-	
-	State handleGetFanState {
-		printCurrentMessage
-		onMsg(getFanState : getFanState(_)) {
-			println("Fan getStatus")
-			replyTo getFanState with fanState : fanState( $Stato )
-		}
-	}
-	Goto off if [# Stato == 0 #]
-	else on //qui potrei dire else if?
+	Transition t2 whenMsg stopFan -> off
 }
 
 QActor weight context ctxservice {
@@ -425,7 +415,7 @@ QActor weight context ctxservice {
 		whenRequest getWeight -> handleRequest
   	
 	State handleRequest {
-		replyTo getWeight with weightState: weightState(30) // TODO: random weight
+		replyTo getWeight with weight: weight(30) // TODO: random weight
    	}
 	Transition t1
 		whenRequest getWeight -> handleRequest

@@ -553,7 +553,9 @@
 		a distributed system, and most likely the transport trolley will be on a separate node, the transport trolley
 		will be modelled as an active entity, an actor, that wraps the basicrobot. The following graphs show the
 		interaction between the transport trolley and the ParkManagerService. These basic interactions can be deduced
-		from the requirements. Further interaction will be added if needed in the problem analysis.
+		from the requirements. Further interaction will be added if needed in the problem analysis. Since we have clarified
+		with the customer that the requests fot the moves are not handled in parallel, we have represented them as
+		synchronous request, while the stop and resume command are dispatch.
 
 		<img style="max-width: 100%" src="img/trolley-interaction.png" alt="trolley interaction">
 
