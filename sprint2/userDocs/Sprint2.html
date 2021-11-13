@@ -209,6 +209,11 @@
 
 	<h2>Sprint</h2>
 	<div class="remark">
+		In order to send commands to the transport trolley, we used the basicrobot to make basic moves as forward, left,
+		etc. So, when a user request to enter or pick up his car, the <k>parkingservice</k> actor sends a macro request
+		to the <k>trolley</k> actor (such as <k>moveToIn</k>). At this point the <k>trolley</k> actor breaks down the
+		request into basic moves and sends them to the <k>basicrobot</k> that commands the trolley.<br>
+
 	</div>
 
 	<h2>Testing</h2>
