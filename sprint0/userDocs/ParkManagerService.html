@@ -695,7 +695,7 @@
 
 			<tr>
 				<td>
-					<h4>testRequestSlot</h4>
+					<h4>testClientEnterRequest</h4>
 					The client requests a slot and there is one slot available, the weigthsensor don't detect a car in <!-- così (quindi bisogna controllare?) o precondizione INDOOR area is free -->
 					front of the INDOOR, and the transport trolley is either at home or working. (F1, F2, F7)
 					<br/><b>Conditions</b> <!-- e quindi questi sono anche i check|assert da fare nel test -->
@@ -709,7 +709,7 @@
 
 			<tr>
 				<td>
-					<h4>testRequestSlotNoSlotsFree</h4>
+					<h4>testClientEnterRequestNoSlotsFree</h4>
 					The client requests a slot but there is not a free slot. (F1, F2, F7)
 					<br/><b>Conditions</b>
 					<ul>
@@ -721,7 +721,7 @@
 
 			<tr>
 				<td>
-					<h4>testRequestSlotIndoorOccupied</h4>
+					<h4>testClientEnterRequestIndoorOccupied</h4>
 					The client requests a slot but there the weightsensor still detects a car. (F1, F2, F7)
 					<br/><b>Conditions</b>
 					<ul>
@@ -735,7 +735,7 @@
 
 			<tr>
 				<td>
-					<h4>testPressCarEnter</h4>
+					<h4>testClientCarEnter</h4>
 					The client has received SLOTNUM between 1 and 6, left the car in front of the INDOOR-area and pressed
 					CARENTER (F3, F5, F6)
 					<br/><b>Conditions</b>
@@ -752,7 +752,7 @@
 			<!-- Test per ogni singola mossa? una sola mossa? -->
 			<tr>
 				<td>
-					<h4>testTransportTrolley</h4>
+					<h4>testTrolleyMove</h4>
 					The ParkService send a command to the transport trolley (F4)
 					<br/><b>Conditions</b>
 					<ul>
