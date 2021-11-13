@@ -16,9 +16,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* SPRINT0 MODEL */
+/* --------------- SPRINT0 MODEL --------------- */
 
-System /*-trace*/ -msglog  parkingservice
+System /*-trace*/ -msglog  parkingsystem
 
 
 // SENSORS & FAN
@@ -27,7 +27,7 @@ Request  getDistance    : getDistance(X)
 Reply    distance       : distance(VALUE)
 
 Request  getWeight		: getWeight(X)
-Reply    weight	: weight(VALUE)
+Reply    weight	        : weight(VALUE)
 
 Request  getTemperature	: getTemperature(X)
 Reply    temperature	: temperature(VALUE)
@@ -37,40 +37,31 @@ Event carLeftIndoor     : carLeftIndoor(X)
 Event carArrivedOutdoor : carArrivedOutdoor(X)
 Event carLeftOutdoor    : carLeftOutdoor(X)
 
-Event aboveTMAX : aboveTMAX()
-Event underTMAX : underTMAX()
+Event aboveTMAX : aboveTMAX(X)
+Event underTMAX : underTMAX(X)
 
-Dispatch startFan		: startFan(X)
-Dispatch stopFan		: stopFan(X)
+Dispatch startFan	: startFan(X)
+Dispatch stopFan	: stopFan(X)
 
 
-//TIMER
+// TIMER
 
 Dispatch startTimer		: startTimer(_)
 Dispatch stopTimer		: stopTimer(_)
 Event	 timeout		: timeout(_)
 
 
-//TRANSPORT TROLLEY
-
-Request  getTrolleyStatus	: getTrolleyStatus(X)
-Reply    trolleyStatus	: trolleyStatus(STATUS)
-
-Dispatch setTrolleyStatus	: trolleyStatus(STATUS)
+// TROLLEY
 
 Request  moveToIn		: moveToIn(X)
+Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
+Request  moveToHome		: moveToHome(X)
+Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
+Request  moveToOut		: moveToOut(X)
 Reply    moveDone		: moveDone(MOVE, RESULT)
 
-Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
-
-Request  backHome		: backHome(X)
-
-Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
-
-Request  moveToOut		: moveToOut(X)
-
-Dispatch stop            : stop(X)
-Dispatch resume          : resume(X)
+Dispatch stop           : stop(X)
+Dispatch resume         : resume(X)
 
 
 // GUI CLIENT
@@ -81,23 +72,31 @@ Reply    slotNum		: slotNum(SLOTNUM)
 Request  carEnter		: carEnter(X)
 Reply    token			: token(TOKENID)
 
-Dispatch canEnter		: canEnter(X)
-
-
 Request  pickUpRequest	: pickUpRequest(TOKENID)
 Reply    pickUpReply	: pickUpReply(STATUS)
 
+
 // GUI MANAGER
+
+Request startFan    : startFan(X)
+Request stopFan     : stopFan(X)
+Reply fanOk         : fanOk(STATUS)
+
+Request readStatus  : readStatus(X)
+Reply parkStatus    : parkStatus(STATUS)
+
+Dispatch temperatureAlarm   : temperatureAlarm(X)
 
 
 
 // CONTEXTS
 
 Context ctxservice ip [ host= "localhost" port= 8050 ]
-Context ctxclient ip [ host= "127.0.0.1" port= 8051 ]
-Context ctxmanager ip [ host= "127.0.0.2" port= 8052 ]
-Context ctxtrolley ip [ host= "127.0.0.3" port= 8053 ]
+//Context ctxclient ip [ host= "127.0.0.1" port= 8051 ]
+//Context ctxmanager ip [ host= "127.0.0.2" port= 8052 ]
+//Context ctxtrolley ip [ host= "127.0.0.3" port= 8053 ]
 //+uno per ogni sensore
+
 
 QActor parkmanagerservice context ctxservice {
 	[# var Occupati = BooleanArray(6) { false }
@@ -109,16 +108,16 @@ QActor parkmanagerservice context ctxservice {
 	}
 	Goto idle
 	State idle {
-		
+
 	}
 	Transition t0
 		whenRequest enterRequest -> handleEnterRequest
 		whenRequest carEnter -> handleCarEnter
 		whenRequest pickUpRequest -> handlePickUp
-	
+
 	State handleEnterRequest {
 		//TOASK: cosa succede qui se il sensore di peso dice che c'è una macchina sopra?
-		
+
 		//qui trovo il numero del primo slot disponibile e restituisco il risultato
 		[#
 			SLOTNUM = -1
@@ -151,7 +150,7 @@ QActor parkmanagerservice context ctxservice {
 		#]
 		println("[PARKMANAGERSERVICE] Generated TOKENID: $TOKENID")
 		request trolley -m moveToIn : moveToIn(X)
-		
+
 	}
 	Transition t1
 		whenReply moveDone -> handleCarEnter1
@@ -165,10 +164,10 @@ QActor parkmanagerservice context ctxservice {
 		whenReply moveDone -> handleCarEnter2
 	State handleCarEnter2 {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
-					
+
 			//if there are not other requests
-			request trolley -m backHome : backHome(X)
-				
+			request trolley -m moveToHome : moveToHome(X)
+
 		}
 	}
 	Transition t2b
@@ -179,12 +178,12 @@ QActor parkmanagerservice context ctxservice {
 	Goto idle
 	/*Goto handleCarEnterKo if [# SLOTNUM == 0 #]
 	else handleCarEnterOk //qui potrei dire else if?
-	
+
 	State handleCarEnterKo {
-		
+
 	}
 	State handleCarEnterOk {
-		
+
 	}*/
 	State handlePickUp {
 		onMsg(pickUpRequest : pickUpRequest(TOKENID)) {
@@ -192,7 +191,7 @@ QActor parkmanagerservice context ctxservice {
 				SLOTNUM = payloadArg(0)[1].toInt()
 			#]
 			request trolley -m moveToSlotOut : moveToSlotOut($SLOTNUM)
-			
+
 		}
 	}
 	Transition t3
@@ -200,21 +199,15 @@ QActor parkmanagerservice context ctxservice {
 	State handlePickUp1 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
 				request trolley -m moveToOut : moveToOut(X)
-				
+
 			}
 	}
 	Transition t4
 		whenReply moveDone -> handlePickUp2
 	State handlePickUp2 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
-			
 			replyTo pickUpRequest with pickUpReply : pickUpReply(STATUS)
-
-			forward client -m canEnter : canEnter(X)
-			
-			forward dtfree -m startTimer : startTimer(X)
-			//if there are not other requests
-			request trolley -m backHome : backHome(X)
+			request trolley -m moveToHome : moveToHome(X)
 		}
 	}
 	Transition t5
@@ -229,7 +222,7 @@ QActor parkmanagerservice context ctxservice {
 //		ACTORS FOR GUIs
 // ----------------------------------
 
-QActor client context ctxclient { // TODO: ctxclient
+QActor client context ctxservice { // TODO: ctxclient
 	State s0 initial {
 		println("clientGUI init")
 		delay 5000
@@ -262,13 +255,8 @@ QActor client context ctxclient { // TODO: ctxclient
 	Transition t3
 		whenReply pickUpReply -> pickUp
 	State pickUp {
-		
+
 		println("[CLIENT] CAR PICKED UP")
-	}
-	Transition t4
-		whenMsg canEnter -> canEnter
-	State canEnter {
-		println("[CLIENT] There is a new free parking slot")
 	}
 }
 
@@ -278,7 +266,7 @@ QActor manager context ctxservice { // TODO: ctxmanager
 	}
 	Transition t0
 		whenEvent timeout -> timeout
-	
+
 	State timeout {
 		println("TIMEOUT")
 	}
@@ -288,14 +276,14 @@ QActor manager context ctxservice { // TODO: ctxmanager
 //		ACTORS FOR TROLLEY
 // ----------------------------------
 
-QActor trolley context ctxtrolley { //TODO: ctxtrolley
+QActor trolley context ctxservice { //TODO: ctxtrolley
 	State s0 initial {
-		
+
 	}
 	Transition t0
 		whenRequest moveToIn -> moveToIn
 		whenRequest moveToSlotIn -> moveToSlotIn
-		whenRequest backHome -> backHome
+		whenRequest moveToHome -> moveToHome
 		whenRequest moveToSlotOut -> moveToSlotOut
 		whenRequest moveToOut -> moveToOut
 	State moveToIn {
@@ -310,10 +298,10 @@ QActor trolley context ctxtrolley { //TODO: ctxtrolley
 		replyTo moveToSlotIn with moveDone : moveDone(moveToSlotIn, 1)
 	}
 	Goto s0
-	State backHome {
+	State moveToHome {
 		delay 6000
 		println("[TROLLEY] backHome3-6")
-		replyTo backHome with moveDone : moveDone(backHome, 1)
+		replyTo moveToHome with moveDone : moveDone(backHome, 1)
 	}
 	Goto s0
 	State moveToSlotOut {

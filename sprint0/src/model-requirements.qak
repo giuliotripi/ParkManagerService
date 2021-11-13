@@ -21,7 +21,7 @@
 System /*-trace*/ -msglog  parkingsystem
 
 
-//TROLLEY
+// TROLLEY
 
 Request  moveToIn		: moveToIn(X)
 Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
@@ -53,6 +53,7 @@ Context ctxservice ip [ host= "127.0.0.1" port= 8050 ]
 Context ctxclient ip [ host= "127.0.0.2" port= 8051 ]
 Context ctxmanager ip [ host= "127.0.0.3" port= 8052 ]
 Context ctxtrolley ip [ host= "127.0.0.4" port= 8053 ]
+
 
 
 QActor parkmanagerservice context ctxservice {
