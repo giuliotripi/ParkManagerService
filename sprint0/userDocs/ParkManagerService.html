@@ -269,6 +269,11 @@
 				by the parking manager, or it can activate automatically. It can be either on or off;</li>
 			<li><ks>map</ks>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
 			<li><ks>fixed obstacles</ks>: Immovable objects that the robot cannot traverse;</li>
+			<li><ks>enterRequest</ks>: The request made by the client to the ParkManagerService to book a parking-slot;</li>
+			<li><ks>carEnter</ks>: The request made by the client to the ParkManagerService after enterRequest when he parks
+				his car in front of the INDOOR and press the CARENTER button;</li>
+			<li><ks>pickUp</ks>: The request made by the client to the ParkManagerService when he wants to pick up
+				his car. This request can be made after carEnter;</li>
 			<li><ks>parking-manager</ks>: Person in charge of the parking-area, who supervises the state and handles
 				critical situations;</li>
 			<li><ks>client</ks>: Person using services of the parking-area. In particular, he will leave and pickup the car;</li>
