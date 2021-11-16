@@ -23,23 +23,23 @@ System /*-trace*/ -msglog  parkingsystem
 
 // TROLLEY
 
-Request  moveToIn		: moveToIn(X)
+Request  moveToIn		: moveToIn(_)
 Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
-Request  moveToHome		: moveToHome(X)
+Request  moveToHome		: moveToHome(_)
 Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
-Request  moveToOut		: moveToOut(X)
+Request  moveToOut		: moveToOut(_)
 Reply    moveDone		: moveDone(MOVE, RESULT)
 
-Dispatch stop           : stop(X)
-Dispatch resume         : resume(X)
+Dispatch stopTrolley    : stopTrolley(_)
+Dispatch resumeTrolley  : resumeTrolley(_)
 
 
 // GUI CLIENT
 
-Request  enterRequest	: enterRequest(X)
+Request  enterRequest	: enterRequest(_)
 Reply    slotNum		: slotNum(SLOTNUM)
 
-Request  carEnter		: carEnter(X)
+Request  carEnter		: carEnter(_)
 Reply    token			: token(TOKENID)
 
 Request  pickUpRequest	: pickUpRequest(TOKENID)
@@ -72,9 +72,6 @@ QActor parkmanagerservice context ctxservice {
 		whenRequest enterRequest -> handleEnterRequest
 		whenRequest carEnter -> handleCarEnter
 		whenRequest pickUpRequest -> handlePickUp
-		whenRequest startFan -> handleStartFan
-		whenRequest stopFan -> handleStopFan
-		whenRequest readStatus -> handleReadStatus
 	
 	State handleEnterRequest {
 		//TOASK: cosa succede qui se il sensore di peso dice che c'è una macchina sopra?

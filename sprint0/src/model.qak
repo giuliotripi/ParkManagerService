@@ -23,25 +23,19 @@ System /*-trace*/ -msglog  parkingsystem
 
 // SENSORS & FAN
 
-Request  getDistance    : getDistance(X)
-Reply    distance       : distance(VALUE)
+Request  getValue	    : getValue(_)
+Reply	 sensorValue    : sensorValue(VALUE, SENSORNAME)
 
-Request  getWeight		: getWeight(X)
-Reply    weight	        : weight(VALUE)
+Event carArrivedIndoor  : carArrivedIndoor(_)
+Event carLeftIndoor     : carLeftIndoor(_)
+Event carArrivedOutdoor : carArrivedOutdoor(_)
+Event carLeftOutdoor    : carLeftOutdoor(_)
 
-Request  getTemperature	: getTemperature(X)
-Reply    temperature	: temperature(VALUE)
+Event aboveTMAX : aboveTMAX(_)
+Event underTMAX : underTMAX(_)
 
-Event carArrivedIndoor  : carArrivedIndoor(X)
-Event carLeftIndoor     : carLeftIndoor(X)
-Event carArrivedOutdoor : carArrivedOutdoor(X)
-Event carLeftOutdoor    : carLeftOutdoor(X)
-
-Event aboveTMAX : aboveTMAX(X)
-Event underTMAX : underTMAX(X)
-
-Dispatch startFan	: startFan(X)
-Dispatch stopFan	: stopFan(X)
+Dispatch startFan	: startFan(_)
+Dispatch stopFan	: stopFan(_)
 
 
 // TIMER
@@ -53,23 +47,23 @@ Event	 timeout		: timeout(_)
 
 // TROLLEY
 
-Request  moveToIn		: moveToIn(X)
+Request  moveToIn		: moveToIn(_)
 Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
-Request  moveToHome		: moveToHome(X)
+Request  moveToHome		: moveToHome(_)
 Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
-Request  moveToOut		: moveToOut(X)
+Request  moveToOut		: moveToOut(_)
 Reply    moveDone		: moveDone(MOVE, RESULT)
 
-Dispatch stop           : stop(X)
-Dispatch resume         : resume(X)
+Dispatch stopTrolley    : stopTrolley(_)
+Dispatch resumeTrolley  : resumeTrolley(_)
 
 
 // GUI CLIENT
 
-Request  enterRequest	: enterRequest(X)
+Request  enterRequest	: enterRequest(_)
 Reply    slotNum		: slotNum(SLOTNUM)
 
-Request  carEnter		: carEnter(X)
+Request  carEnter		: carEnter(_)
 Reply    token			: token(TOKENID)
 
 Request  pickUpRequest	: pickUpRequest(TOKENID)
@@ -78,14 +72,13 @@ Reply    pickUpReply	: pickUpReply(STATUS)
 
 // GUI MANAGER
 
-Request startFan    : startFan(X)
-Request stopFan     : stopFan(X)
-Reply fanOk         : fanOk(STATUS)
+//Dispatch stopTrolley    : stopTrolley(_)      already defined above
+//Dispatch resumeTrolley  : resumeTrolley(_)    already defined above
 
-Request readStatus  : readStatus(X)
-Reply parkStatus    : parkStatus(STATUS)
+Request readStatus  : readStatus(_)
+Reply   parkStatus  : parkStatus(STATUS)
 
-Dispatch temperatureAlarm   : temperatureAlarm(X)
+Dispatch temperatureAlarm   : temperatureAlarm(_)
 
 
 
@@ -324,12 +317,12 @@ QActor trolley context ctxservice { //TODO: ctxtrolley
 
 QActor dtfree context ctxservice {
 	State idle initial {
-		
+
 	}
 	Transition t0
 		whenMsg startTimer -> timing
 	State timing {
-		
+
 	}
 	//TODO: decidere come gestire la liberazione: il timer controlla in continuazione
 	//e quando si libera manda un evento o il sensore (meglio)?
@@ -347,36 +340,36 @@ QActor dtfree context ctxservice {
 // ----------------------------------
 
 QActor thermometer context ctxservice {
-	State s0 initial {    
+	State s0 initial {
   		 println("Thermometer init")
 	}
-	Transition t0 
-		whenRequest getTemperature -> handleRequest
-  	
+	Transition t0
+		whenRequest getValue -> handleRequest
+
 	State handleRequest {
-		replyTo getTemperature with temperature : temperature(20) // TODO: random temperature
+		replyTo getValue with sensorValue : sensorValue(20, temperature) // TODO: random temperature
    	}
 	Transition t1
-		whenRequest getTemperature -> handleRequest
+		whenRequest getValue -> handleRequest
 }
 
 QActor sonar context ctxservice {
-	State s0 initial {    
+	State s0 initial {
   		 println("Sonar init")
 	}
-	Transition t0 
-		whenRequest getDistance -> handleRequest
-  	
+	Transition t0
+		whenRequest getValue -> handleRequest
+
 	State handleRequest {
-		replyTo getDistance with distance : distance(0) // TODO: random value
+		replyTo getValue with sensorValue : sensorValue(0, distance) // TODO: random value
    	}
 	Transition t1
-		whenRequest getDistance -> handleRequest
+		whenRequest getValue -> handleRequest
 }
 
 QActor fan context ctxservice {
 	[# var Stato = 0 #]  //State is a reserved keyword
-	State s0 initial {    
+	State s0 initial {
   		 println("Fan init")
 	}
 	Goto off
@@ -396,16 +389,16 @@ QActor fan context ctxservice {
 }
 
 QActor weight context ctxservice {
-	State s0 initial {    
+	State s0 initial {
   		 println("Weight init")
 	}
-	Transition t0 
-		whenRequest getWeight -> handleRequest
-  	
+	Transition t0
+		whenRequest getValue -> handleRequest
+
 	State handleRequest {
-		replyTo getWeight with weight: weight(30) // TODO: random weight
+		replyTo getValue with sensorValue: sensorValue(30, weight) // TODO: random weight
    	}
 	Transition t1
-		whenRequest getWeight -> handleRequest
+		whenRequest getValue -> handleRequest
 }
 
