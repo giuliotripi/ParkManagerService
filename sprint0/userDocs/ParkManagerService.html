@@ -209,7 +209,7 @@
             content: "F" counter(number) ".";
             position: relative;
             left:-5px;
-			color: #1632cc;
+            color: #1632cc;
         }
         ol.custom.nonfunctional > li::before {
             content: "NF" counter(number) ".";
@@ -454,7 +454,7 @@
 			<tr>
 				<td rowspan="2">Control of the transport trolley</td>
 				<td rowspan="2">Medium. No encryption on the communication between it and the Service. No authentication to
-				submit commands</td>
+					submit commands</td>
 				<td>Add encryption and authentication</td>
 				<td>Medium. Needs to change the software provided by the customer</td>
 			</tr>
@@ -564,7 +564,11 @@
 		with the customer that the requests fot the moves are not handled in parallel, we have represented them as
 		synchronous request, while the stop and resume command are dispatch.
 
+		<br>
+
 		<img style="max-width: 100%" src="img/trolley-interaction.png" alt="trolley interaction">
+
+		<br>
 
 		In addition, is available an
 		<a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/master/it.unibo.virtualRobot2020/userDocs/VirtualRobot2021.html">API documentation</a>
@@ -614,6 +618,7 @@
 		which highlights only the core aspects of the system, namely, the park phase and the pick-up phase.
 	</div>
 
+
 	<h2>Problem analysis</h2>
 	<div class="remark">
 		<h3>Devices</h3>
@@ -626,7 +631,7 @@
 			</li>
 			<li><ks>outsonar</ks>: The sensor is connected to the software via a cable and supports platforms like Arduino and Raspberry Pi.</li>
 			<li><ks>fan</ks>: can be controlled simply giving or removing power from it. A relay could be used to switch
-			it on and off from a computer</li>
+				it on and off from a computer</li>
 		</ul>
 
 		<h4>Communication between devices</h4>
@@ -635,7 +640,7 @@
 		<ul>
 			<li><ks>fan</ks>: accepts only start/stop commands</li>
 			<li><ks>outsonar</ks>: the customer provided us, besides the SonarAlone.c program, even some applications
-			that sends events for every reading or every bunch of readings. To avoid unnecessary traffic on the net it
+				that sends events for every reading or every bunch of readings. To avoid unnecessary traffic on the net it
 				is better to re-implement it in such a way that only send events when a car arrives or leaves.
 				To do so, it could read a threshold value from a configuration file.</li>
 			<li><ks>weight sensor & thermometer</ks>: similarly to the outsonar, it is better to embed these sensors in
@@ -658,7 +663,7 @@
 				in this scenario</li>
 			<li><ks>HTTP</ks>: it is quite heavy and unidirectional, but could be used for example for the fan, that
 				should only receive commands and reply with an ok/non-ok message. On the other hand, in this way, to provide a layer of encryption, the fan
-			should have an HTTP server and a TLS certificate that should be renewed when expired, complicating the maintenance.</li>
+				should have an HTTP server and a TLS certificate that should be renewed when expired, complicating the maintenance.</li>
 			<li><ks>WebSockets</ks>: lighter than HTTP but still heavy. Bi-directional and supports encryption with
 				minimum effort. Because of his bi-directionality, only the Service should act as a server and the other
 				devices could easily connect to it and exchange messages, requiring only one server and one TLS certificate.</li>
@@ -671,6 +676,20 @@
 		already integrated with the modelling language qak provided by the customer.
 		<br><br>
 
+		<h3>Planner</h3>
+		In order to move the transport trolley around the map, it is necessary to plan all the moves needed for the
+		transport to reach his destination.<br>
+
+		The customer provided us a planner that uses the map referenced in the requirement analysis to provide a list
+		of moves that the transport trolley has to do in order to reach the given destination.<br>
+
+		The code is available <a href="https://github.com/anatali/issLab2021/tree/main/it.unibo.planner20">at this location</a>.
+		The class <code style="font-size: 15px">plannerUtil</code> is located in
+		<code style="font-size: 15px">itunibo.planner</code> package and can be imported in the project adding
+		<a href="https://github.com/anatali/issLab2021/blob/main/unibolibs/IssActorKotlinRobotSupport-2.0.jar">
+			<code style="font-size: 15px">IssActorKotlinRobotSupport-2.0</code></a>
+		as requirement in the gradle build file.
+
 		<h3>GUI interaction</h3>
 
 		<img style="max-width: 100%" src="img/gui-interaction.png" alt="GUI interaction"><br>
@@ -678,17 +697,12 @@
 		The two GUIs are represented in a different context because the ParkManagerService could expose some APIs
 		completely independent of the GUIs, that can be served even by different machine or installed as mobile apps
 		on users' devices.
-
-
-
-		<!-- +qualcosa sul planner (intanto qui poi sopra)-->
-
-
-
-
+		In the model above, the requests without an explicit reply imply a simple acknowledgement message.
 		<br>
 		It is also available an executable model of the system written in <a href="../src/model.qak">qak language</a>.
+
 	</div>
+
 
 	<h2>Test plans</h2>
 	<div class="remark">
@@ -819,6 +833,7 @@
 
 		</table>
 	</div>
+
 
 	<h2>Work plan</h2>
 	<div class="remark">
