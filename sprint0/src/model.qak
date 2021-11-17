@@ -67,13 +67,15 @@ Request  carEnter		: carEnter(_)
 Reply    token			: token(TOKENID)
 
 Request  pickUpRequest	: pickUpRequest(TOKENID)
-Reply    pickUpReply	: pickUpReply(STATUS)
+Reply    pickUpReply	: pickUpReply(_)
 
 
 // GUI MANAGER
 
-//Dispatch stopTrolley    : stopTrolley(_)      already defined above
-//Dispatch resumeTrolley  : resumeTrolley(_)    already defined above
+Request stopTrolley     : stopTrolley(_)
+Request resumeTrolley   : resumeTrolley(_)
+Reply 	error	: error(REASON)
+Reply	ok		: ok(_)
 
 Request readStatus  : readStatus(_)
 Reply   parkStatus  : parkStatus(STATUS)
