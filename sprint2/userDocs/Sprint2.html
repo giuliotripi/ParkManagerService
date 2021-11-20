@@ -197,27 +197,95 @@
 	<h2>Sprint Backlog</h2>
 	<div class="remark">
 		For this second sprint, we will cover the following requirements:
-		<ul>
-			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the OUTDOOR by sending command to a transport trolley
-				(<k>F4</k>)</li>
-			<li>The trolley must go back to home when there are no more requests available (<k>F17</k>)</li>
-			<li>The trolley should not walk over parking-slots or obstacles (<k>F18</k>)</li>
-
+		<ul class="requirementsList">
+			<li>The client can book a parking slot through ParkServiceGUI (<k>F1</k>)</li>
+			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see
+				an error message (<k>F8</k>)</li>
+			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI (<k>F9</k>)</li>
+			<li>The parking manager can see the current state of the parking area through ParkServiceStatusGUI (<k>F12</k>)</li>
+			<li>The parking manager should be able to stop the transport trolley when TA > TMAX through
+				ParkServiceStatusGUI (<k>F13</k>)</li>
+			<li>The parking manager should be able to start the transport trolley when it is stopped through
+				ParkServiceStatusGUI (<k>F14</k>)</li>
+			<li>ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX (<k>F15</k>)</li>
+			<li>ParkManagerService should notify the parking manager when the OUTDOOR is not cleaned within DTFREE
+				interval of time (<k>F16</k>)</li>
 		</ul>
 	</div>
 
 
 	<h2>Sprint</h2>
 	<div class="remark">
-		In order to send commands to the transport trolley, we used the basicrobot to make basic moves as forward, left,
-		etc. So, when a user request to enter or pick up his car, the <k>parkingservice</k> actor sends a macro request
-		to the <k>trolley</k> actor (such as <k>moveToIn</k>). At this point the <k>trolley</k> actor breaks down the
-		request into basic moves and sends them to the <k>basicrobot</k> that commands the trolley.<br>
+			For this sprint, it was necessary to fully implement the managerservice actor, that is the actor appointee to
+			manage all the requests that come from the parking manager.<br>
+		<h3>Interactions between users and ParkManagerService</h3>
+			The User Interface will be a single page application for the clients and another single page application for
+			the parking manager. The application will be accessible via a normal web browser. This way users
+			do not need to install a specific application to use this service and there will be less effort in maintaining
+			one specific application for each Operative System. Of course, the web page will be responsive and
+			usable both on computers and smartphones.<br>
+			For this reason, the client side application will be written using HTML5, CSS3 and javascript, using
+			jQuery and bootstrap as frameworks for both the graphics elements and the interactive web page.<br>
+			The server instead will be a spring web server. It was chosen in order to use the same code written in kotlin
+			for the model even in the webserver.<br>
+			The web server will then send all the requests to the ctxservice via CoAP messages. This way the webserver
+			and the application could be in two separate machines. In addition, both components can be replaced
+			with another (e.g. a node web server), as long as they continue to use the same communication protocol.<br>
+			The requests are forwarded to the parkingservice if they come from a client, and to the managerservice actor
+			if they come from the parking manager.<br>
+			For the retrieval of the parking area status, it was used the CoAP observable property of the qak actors:
+			the managerservice has the representation of the status, formatted in json, as state of the resource. In this
+			way every time that the managerservice wants to know the status, simply reads the state of the resource.<br>
+			We decided to not use observers that listens for changes of the status in real time, since it is not required
+			that the ParkServiceStatusGUI updates in real time.<br>
+			All the messages between the web server and the parkingservice actor were already defined in sprint 1.<br>
+			The following CoAp messages are exchanged between the web server and the managerservice actor:
 
+		<table>
+			<tr>
+				<th>MsgType</th>
+				<th>MsgId</th>
+				<th>MsgContent</th>
+			</tr>
+			<tr>
+				<th>Request</th>
+				<td>stopTrolley</td>
+				<td>stopTrolley(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>ok</td>
+				<td>ok(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>error</td>
+				<td>error(temperatureundertmax)</td>
+			</tr>
+			<tr>
+				<th>Request</th>
+				<td>resumeTrolley</td>
+				<td>resumeTrolley(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>error</td>
+				<td>error(valuesnotvalid)</td>
+			</tr>
+		</table>
+		The state is stored inside the ParkingDevicesStatus, encoded in JSON.<br>
+		As stated in the requirements analysis, the current state only includes the temperature sensor, but, in order
+		to make this extendable, we saved the sensors in a HashMap. This way adding new sensors should be pretty straightforward.<br>
+		<!-- we will cover the managerService and the sensorService, uml state for both?  -->
+		managerservice uses polling to retrieve the measure from sensor.
 	</div>
 
 	<h2>Testing</h2>
 	<div class="remark">
+		Some new testing classed were added: now it is necessary to test that the managerservice requests works fine,
+		and that the spring application reply correctly to the requests.
+		<a href="../test/eu/musarellatripi/test/TestPlan2.kt">sprint2</a>
+
 	</div>
 
 	<h2>Sprint Review</h2>
@@ -236,4 +304,13 @@
 	GitHub: <a style="color: white" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a>
 </div>
 </body>
+<script type="application/javascript">
+	let requirements = document.querySelectorAll('ul.requirementsList  > li > k');
+	console.log(requirements.length)
+	for (let i = 0; i < requirements.length; i++) {
+		let req = requirements[i].innerHTML;
+		requirements[i].innerHTML = "<a href='../../sprint0/userDocs/ParkManagerService.html#" + req + "'>" + req + "</a>";
+	}
+
+</script>
 </html>
