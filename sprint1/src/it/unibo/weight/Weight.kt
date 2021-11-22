@@ -31,13 +31,13 @@ class Weight ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sco
 						stateTimer = TimerActor("timer_idle", 
 							scope, context!!, "local_tout_weight_idle", 20000.toLong() )
 					}
-					 transition(edgeName="t070",targetState="check",cond=whenTimeout("local_tout_weight_idle"))   
-					transition(edgeName="t071",targetState="handleRequest",cond=whenRequest("getValue"))
-					transition(edgeName="t072",targetState="handleSetWeight",cond=whenDispatch("setValue"))
+					 transition(edgeName="t067",targetState="check",cond=whenTimeout("local_tout_weight_idle"))   
+					transition(edgeName="t068",targetState="handleRequest",cond=whenRequest("getValue"))
+					transition(edgeName="t069",targetState="handleSetWeight",cond=whenDispatch("setValue"))
 				}	 
 				state("handleRequest") { //this:State
 					action { //it:State
-						answer("getValue", "sensorValue", "sensorValue($WEIGHT)"   )  
+						answer("getValue", "sensorValue", "sensorValue($WEIGHT,weight)"   )  
 						println("[WEIGHT] value is $WEIGHT")
 						updateResourceRep( "req"  
 						)
@@ -54,7 +54,7 @@ class Weight ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sco
 				}	 
 				state("handleSetWeight") { //this:State
 					action { //it:State
-						if( checkMsgContent( Term.createTerm("sensorValue(VALUE)"), Term.createTerm("sensorValue(WEIGHT)"), 
+						if( checkMsgContent( Term.createTerm("sensorValue(VALUE,SENSORNAME)"), Term.createTerm("sensorValue(WEIGHT,weight)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								 WEIGHT = payloadArg(0).toInt()  
 								println("[WEIGHT] value is NOW $WEIGHT")

@@ -31,12 +31,12 @@ class Trolley ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 						
 									State = "idle"
 					}
-					 transition(edgeName="t026",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-					transition(edgeName="t027",targetState="moveToIn",cond=whenRequest("moveToIn"))
-					transition(edgeName="t028",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
-					transition(edgeName="t029",targetState="backHome",cond=whenRequest("backHome"))
-					transition(edgeName="t030",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
-					transition(edgeName="t031",targetState="moveToOut",cond=whenRequest("moveToOut"))
+					 transition(edgeName="t025",targetState="stopped",cond=whenDispatch("stopTrolley"))
+					transition(edgeName="t026",targetState="moveToIn",cond=whenRequest("moveToIn"))
+					transition(edgeName="t027",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
+					transition(edgeName="t028",targetState="backHome",cond=whenRequest("backHome"))
+					transition(edgeName="t029",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
+					transition(edgeName="t030",targetState="moveToOut",cond=whenRequest("moveToOut"))
 				}	 
 				state("moveToIn") { //this:State
 					action { //it:State
@@ -46,12 +46,12 @@ class Trolley ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 						println("[TROLLEY] moveToIn1")
 						answer("moveToIn", "moveDone", "moveDone(moveToIn,1)"   )  
 					}
-					 transition(edgeName="t132",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-					transition(edgeName="t133",targetState="moveToIn",cond=whenRequest("moveToIn"))
-					transition(edgeName="t134",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
-					transition(edgeName="t135",targetState="backHome",cond=whenRequest("backHome"))
-					transition(edgeName="t136",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
-					transition(edgeName="t137",targetState="moveToOut",cond=whenRequest("moveToOut"))
+					 transition(edgeName="t131",targetState="stopped",cond=whenDispatch("stopTrolley"))
+					transition(edgeName="t132",targetState="moveToIn",cond=whenRequest("moveToIn"))
+					transition(edgeName="t133",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
+					transition(edgeName="t134",targetState="backHome",cond=whenRequest("backHome"))
+					transition(edgeName="t135",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
+					transition(edgeName="t136",targetState="moveToOut",cond=whenRequest("moveToOut"))
 				}	 
 				state("moveToSlotIn") { //this:State
 					action { //it:State
@@ -61,12 +61,12 @@ class Trolley ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 						println("[TROLLEY] moveToSlotIn2")
 						answer("moveToSlotIn", "moveDone", "moveDone(moveToSlotIn,1)"   )  
 					}
-					 transition(edgeName="t238",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-					transition(edgeName="t239",targetState="moveToIn",cond=whenRequest("moveToIn"))
-					transition(edgeName="t240",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
-					transition(edgeName="t241",targetState="backHome",cond=whenRequest("backHome"))
-					transition(edgeName="t242",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
-					transition(edgeName="t243",targetState="moveToOut",cond=whenRequest("moveToOut"))
+					 transition(edgeName="t237",targetState="stopped",cond=whenDispatch("stopTrolley"))
+					transition(edgeName="t238",targetState="moveToIn",cond=whenRequest("moveToIn"))
+					transition(edgeName="t239",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
+					transition(edgeName="t240",targetState="backHome",cond=whenRequest("backHome"))
+					transition(edgeName="t241",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
+					transition(edgeName="t242",targetState="moveToOut",cond=whenRequest("moveToOut"))
 				}	 
 				state("backHome") { //this:State
 					action { //it:State
@@ -86,12 +86,12 @@ class Trolley ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 						println("[TROLLEY] moveToSlotOut4")
 						answer("moveToSlotOut", "moveDone", "moveDone(moveToSlotOut,1)"   )  
 					}
-					 transition(edgeName="t344",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-					transition(edgeName="t345",targetState="moveToIn",cond=whenRequest("moveToIn"))
-					transition(edgeName="t346",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
-					transition(edgeName="t347",targetState="backHome",cond=whenRequest("backHome"))
-					transition(edgeName="t348",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
-					transition(edgeName="t349",targetState="moveToOut",cond=whenRequest("moveToOut"))
+					 transition(edgeName="t343",targetState="stopped",cond=whenDispatch("stopTrolley"))
+					transition(edgeName="t344",targetState="moveToIn",cond=whenRequest("moveToIn"))
+					transition(edgeName="t345",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
+					transition(edgeName="t346",targetState="backHome",cond=whenRequest("backHome"))
+					transition(edgeName="t347",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
+					transition(edgeName="t348",targetState="moveToOut",cond=whenRequest("moveToOut"))
 				}	 
 				state("moveToOut") { //this:State
 					action { //it:State
@@ -101,37 +101,21 @@ class Trolley ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 						println("[TROLLEY] moveToOut5")
 						answer("moveToOut", "moveDone", "moveDone(moveToOut,1)"   )  
 					}
-					 transition(edgeName="t450",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-					transition(edgeName="t451",targetState="moveToIn",cond=whenRequest("moveToIn"))
-					transition(edgeName="t452",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
-					transition(edgeName="t453",targetState="backHome",cond=whenRequest("backHome"))
-					transition(edgeName="t454",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
-					transition(edgeName="t455",targetState="moveToOut",cond=whenRequest("moveToOut"))
+					 transition(edgeName="t449",targetState="stopped",cond=whenDispatch("stopTrolley"))
+					transition(edgeName="t450",targetState="moveToIn",cond=whenRequest("moveToIn"))
+					transition(edgeName="t451",targetState="moveToSlotIn",cond=whenRequest("moveToSlotIn"))
+					transition(edgeName="t452",targetState="backHome",cond=whenRequest("backHome"))
+					transition(edgeName="t453",targetState="moveToSlotOut",cond=whenRequest("moveToSlotOut"))
+					transition(edgeName="t454",targetState="moveToOut",cond=whenRequest("moveToOut"))
 				}	 
 				state("stopped") { //this:State
 					action { //it:State
 						updateResourceRep( "stopped"  
 						)
+						println("[TROLLEY] stopped")
 						discardMessages = true
 					}
-					 transition(edgeName="t556",targetState="handleSetTrolleyStatus",cond=whenDispatch("setTrolleyStatus"))
-				}	 
-				state("handleSetTrolleyStatus") { //this:State
-					action { //it:State
-						if( checkMsgContent( Term.createTerm("trolleyStatus(STATUS)"), Term.createTerm("trolleyStatus(STATUS)"), 
-						                        currentMsg.msgContent()) ) { //set msgArgList
-								
-												val newStatus = payloadArg(0)
-												if(newStatus.equals("stopped"))
-													State = "stopped"
-												else
-													State = "idle"
-						}
-					}
-					 transition( edgeName="goto",targetState="stopped", cond=doswitchGuarded({ State.equals("stopped")  
-					}) )
-					transition( edgeName="goto",targetState="idle", cond=doswitchGuarded({! ( State.equals("stopped")  
-					) }) )
+					 transition(edgeName="t555",targetState="idle",cond=whenDispatch("resumeTrolley"))
 				}	 
 			}
 		}

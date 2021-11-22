@@ -2,8 +2,6 @@ package eu.musarellatripi.sensors
 
 import org.eclipse.californium.core.CoapClient
 import org.eclipse.californium.core.coap.MediaTypeRegistry
-import org.eclipse.californium.core.CoapHandler
-import org.eclipse.californium.core.CoapObserveRelation
 import org.eclipse.californium.core.CoapResponse
 
 
@@ -24,7 +22,7 @@ abstract class CoapTalkerSensor : CoapTalker {
 	}
 	//msg(weightState,reply,weight,weight,weightState(30),40)
 	private fun respToValue(value: String): String? {
-		return Regex("""msg\(\w+,\w+,\w+,\w+,\w+\((\d+)\),\d+\)""").find(value)?.groupValues!![1]
+		return Regex("""msg\(\w+,\w+,\w+,\w+,\w+\((\d+),(\w+)\),\d+\)""").find(value)?.groupValues!![1]
 	}
 	
 }

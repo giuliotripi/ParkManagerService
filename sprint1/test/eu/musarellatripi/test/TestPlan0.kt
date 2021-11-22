@@ -12,7 +12,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
 import org.junit.Test
 import eu.musarellatripi.sensors.ApplMessage
-import eu.musarellatripi.sensors.ResponseObserver
 import org.junit.After
 import org.junit.Before
 import eu.musarellatripi.sensors.ApplMessageType
@@ -91,8 +90,8 @@ class TestPlan0 {
 		Assert.assertEquals(0, ns.toInt())
 	}
 	@Test
-	fun testRequestSlot() {
-		println("STARTING testRequestSlot")
+	fun testClientEnterRequest() {
+		println("STARTING testClientEnterRequest")
 		TestUtils.setWeight(0);
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 		
@@ -102,22 +101,8 @@ class TestPlan0 {
 		
 		val oldState = parkingState.getAll()
 		
-		//sender, request : request(X), destActor
-		//val stepRequest = MsgUtil.buildRequest("coapalien", "enterRequest", "enterRequest(_)", "parkingservice")
 		coapClient = CoapTalker("coap://localhost:8050/ctxservice/parkingservice")
 		val resp = coapClient.request(ApplMessage("enterRequest", ApplMessageType.request.toString(), "external", "parkingservice", "enterRequest(X)", "0"))
-		
-		/*val channelForObserver = Channel<String>()
-		val observer = ResponseObserver("obs1", channelForObserver, "handleEnterRequest")
-		coapClient.observeResource(observer)
-		var result : String = ""
-		
-		runBlocking {
-			//MsgUtil.sendMsg(stepRequest, myactor!!)
-			println("waiting for receiving")
-			result = channelForObserver.receive()
-			println(" received: $result  ____END")
-		}*/
 		
 		var slotNum: Int
 		
@@ -155,8 +140,8 @@ class TestPlan0 {
 		
 	}
 	@Test
-	fun testRequestSlotNoSlotsFree() {
-		println("STARTING testRequestSlotNoSlotsFree")
+	fun testClientEnterRequestNoSlotsFree() {
+		println("STARTING testClientEnterRequestNoSlotsFree")
 		TestUtils.setWeight(0);
 		
 		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
@@ -190,12 +175,13 @@ class TestPlan0 {
 				println(respInfo2)
 				Assert.assertEquals(4, respInfo2?.count())
 				Assert.assertEquals("error", respInfo2!![1])
+				Assert.assertEquals("valuesnotvalid", respInfo2[3])
 			}
 		}
 	}
 	@Test
-	fun testRequestSlotIndoorOccupied() {
-		println("STARTING testRequestSlotIndoorOccupied")
+	fun testClientEnterRequestIndoorOccupied() {
+		println("STARTING testClientEnterRequestIndoorOccupied")
 		
 		TestUtils.setWeight(Values.weightThreshold + 100);
 		
@@ -213,6 +199,37 @@ class TestPlan0 {
 			println(respInfo)
 			Assert.assertEquals(4, respInfo?.count())
 			Assert.assertEquals("error", respInfo!![1])
+			Assert.assertEquals("weighttoohigh", respInfo[3])
+		}
+	}
+	@Test
+	fun testClientCarEnter() {
+		println("STARTING testClientCarEnter")
+		TestUtils.setWeight(Values.weightThreshold + 100);
+		val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+		
+		for(i in 1..6) {
+			parkingState.update(i, false, "")
+		}
+		
+		parkingState.update(1, true, "")
+		
+		var slotNum = 1
+		
+		coapClient = CoapTalker("coap://localhost:8050/ctxservice/parkingservice")
+		val resp = coapClient.request(ApplMessage("carEnter", ApplMessageType.request.toString(), "external", "parkingservice", "carEnter(${slotNum})", "0"))
+		
+		Assert.assertNotNull(resp)
+		if(resp != null) {
+			val respInfo = coapClient.respToInfo(resp)
+			println(respInfo)
+			Assert.assertNotNull(respInfo) //maybe regex error from message
+			Assert.assertEquals(4, respInfo?.count())
+			Assert.assertEquals("token", respInfo!![1])
+			var token = respInfo[3]
+			assert(token.length > 0)
+			Assert.assertEquals(true, parkingState.get(slotNum).reserved)
+			Assert.assertEquals(token, parkingState.get(slotNum).token)
 		}
 	}
 	@Test

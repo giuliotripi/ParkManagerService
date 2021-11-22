@@ -57,12 +57,6 @@ class Client ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sco
 					action { //it:State
 						println("[CLIENT] CAR PICKED UP")
 					}
-					 transition(edgeName="t424",targetState="canEnter",cond=whenDispatch("canEnter"))
-				}	 
-				state("canEnter") { //this:State
-					action { //it:State
-						println("[CLIENT] There is a new free parking slot")
-					}
 				}	 
 			}
 		}

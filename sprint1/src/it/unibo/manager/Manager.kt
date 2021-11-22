@@ -21,7 +21,7 @@ class Manager ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sc
 					action { //it:State
 						println("managerGUI init")
 					}
-					 transition(edgeName="t025",targetState="timeout",cond=whenEvent("timeout"))
+					 transition(edgeName="t024",targetState="timeout",cond=whenEvent("timeout"))
 				}	 
 				state("timeout") { //this:State
 					action { //it:State

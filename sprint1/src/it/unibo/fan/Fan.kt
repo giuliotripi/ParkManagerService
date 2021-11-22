@@ -27,38 +27,22 @@ class Fan ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, scope 
 				state("off") { //this:State
 					action { //it:State
 						println("Fan off")
-						updateResourceRep( "fanOff"  
+						updateResourceRep( "off"  
 						)
 						 Stato = 0  
 						discardMessages = true
 					}
-					 transition(edgeName="t166",targetState="on",cond=whenDispatch("setFanOn"))
-					transition(edgeName="t167",targetState="handleGetFanState",cond=whenRequest("getFanState"))
+					 transition(edgeName="t165",targetState="on",cond=whenDispatch("startFan"))
 				}	 
 				state("on") { //this:State
 					action { //it:State
 						println("Fan on")
-						updateResourceRep( "fanOn"  
+						updateResourceRep( "on"  
 						)
 						 Stato = 1  
 						discardMessages = true
 					}
-					 transition(edgeName="t268",targetState="off",cond=whenDispatch("setFanOff"))
-					transition(edgeName="t269",targetState="handleGetFanState",cond=whenRequest("getFanState"))
-				}	 
-				state("handleGetFanState") { //this:State
-					action { //it:State
-						println("$name in ${currentState.stateName} | $currentMsg")
-						if( checkMsgContent( Term.createTerm("getFanState(X)"), Term.createTerm("getFanState(_)"), 
-						                        currentMsg.msgContent()) ) { //set msgArgList
-								println("Fan getStatus")
-								answer("getFanState", "fanState", "fanState($Stato)"   )  
-						}
-					}
-					 transition( edgeName="goto",targetState="off", cond=doswitchGuarded({ Stato == 0  
-					}) )
-					transition( edgeName="goto",targetState="on", cond=doswitchGuarded({! ( Stato == 0  
-					) }) )
+					 transition(edgeName="t266",targetState="off",cond=whenDispatch("stopFan"))
 				}	 
 			}
 		}

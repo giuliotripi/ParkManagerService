@@ -23,7 +23,7 @@ class Thermometerevent ( name: String, scope: CoroutineScope  ) : ActorBasicFsm(
 						stateTimer = TimerActor("timer_s0", 
 							scope, context!!, "local_tout_thermometerevent_s0", 1000.toLong() )
 					}
-					 transition(edgeName="t063",targetState="check",cond=whenTimeout("local_tout_thermometerevent_s0"))   
+					 transition(edgeName="t062",targetState="check",cond=whenTimeout("local_tout_thermometerevent_s0"))   
 				}	 
 				state("check") { //this:State
 					action { //it:State

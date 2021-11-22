@@ -20,16 +20,16 @@ class Dtfree ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, sco
 				state("idle") { //this:State
 					action { //it:State
 					}
-					 transition(edgeName="t057",targetState="timing",cond=whenDispatch("startTimer"))
+					 transition(edgeName="t056",targetState="timing",cond=whenDispatch("startTimer"))
 				}	 
 				state("timing") { //this:State
 					action { //it:State
 						stateTimer = TimerActor("timer_timing", 
 							scope, context!!, "local_tout_dtfree_timing", 60000.toLong() )
 					}
-					 transition(edgeName="t158",targetState="timeout",cond=whenTimeout("local_tout_dtfree_timing"))   
-					transition(edgeName="t159",targetState="idle",cond=whenDispatch("stopTimer"))
-					transition(edgeName="t160",targetState="idle",cond=whenEvent("outdoorAreaNowFree"))
+					 transition(edgeName="t157",targetState="timeout",cond=whenTimeout("local_tout_dtfree_timing"))   
+					transition(edgeName="t158",targetState="idle",cond=whenDispatch("stopTimer"))
+					transition(edgeName="t159",targetState="idle",cond=whenEvent("carLeftOutdoor"))
 				}	 
 				state("timeout") { //this:State
 					action { //it:State

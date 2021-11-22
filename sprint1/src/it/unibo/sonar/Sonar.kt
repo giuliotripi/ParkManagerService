@@ -16,7 +16,7 @@ class Sonar ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, scop
 	@kotlinx.coroutines.ObsoleteCoroutinesApi
 	@kotlinx.coroutines.ExperimentalCoroutinesApi			
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
-		 var VALUE = 0  
+		 var DISTANCE = 0  
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
@@ -27,20 +27,20 @@ class Sonar ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( name, scop
 				state("idle") { //this:State
 					action { //it:State
 					}
-					 transition(edgeName="t064",targetState="handleRequest",cond=whenRequest("getValue"))
-					transition(edgeName="t065",targetState="handleSetValue",cond=whenDispatch("setValue"))
+					 transition(edgeName="t063",targetState="handleRequest",cond=whenRequest("getValue"))
+					transition(edgeName="t064",targetState="handleSetValue",cond=whenDispatch("setValue"))
 				}	 
 				state("handleRequest") { //this:State
 					action { //it:State
-						answer("getValue", "sensorValue", "sensorValue($VALUE)"   )  
+						answer("getValue", "sensorValue", "sensorValue($DISTANCE,distance)"   )  
 					}
 					 transition( edgeName="goto",targetState="idle", cond=doswitch() )
 				}	 
 				state("handleSetValue") { //this:State
 					action { //it:State
-						if( checkMsgContent( Term.createTerm("sensorValue(VALUE)"), Term.createTerm("sensorValue(STATE)"), 
+						if( checkMsgContent( Term.createTerm("sensorValue(VALUE,SENSORNAME)"), Term.createTerm("sensorValue(DISTANCE,distance)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
-								 VALUE = payloadArg(0).toInt()  
+								 DISTANCE = payloadArg(0).toInt()  
 						}
 					}
 					 transition( edgeName="goto",targetState="idle", cond=doswitch() )

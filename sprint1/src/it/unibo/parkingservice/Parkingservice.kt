@@ -49,7 +49,7 @@ class Parkingservice ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( n
 				state("handleEnterRequest2") { //this:State
 					action { //it:State
 						println("handleEnterRequest2")
-						if( checkMsgContent( Term.createTerm("sensorValue(VALUE)"), Term.createTerm("sensorValue(WEIGHT)"), 
+						if( checkMsgContent( Term.createTerm("sensorValue(VALUE,SENSORNAME)"), Term.createTerm("sensorValue(WEIGHT,weight)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								
 												SLOTNUM = 0
@@ -97,7 +97,7 @@ class Parkingservice ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( n
 				state("handleCarEnter2") { //this:State
 					action { //it:State
 						println("In handleCarEnter")
-						if( checkMsgContent( Term.createTerm("sensorValue(VALUE)"), Term.createTerm("sensorValue(WEIGHT)"), 
+						if( checkMsgContent( Term.createTerm("sensorValue(VALUE,SENSORNAME)"), Term.createTerm("sensorValue(WEIGHT,weight)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								
 											val weight = payloadArg(0).toInt()
@@ -106,31 +106,39 @@ class Parkingservice ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( n
 											
 											val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 											if(SLOTNUM >= 1 && SLOTNUM <= 6 && parkingState.get(SLOTNUM).reserved == true &&
-												parkingState.get(SLOTNUM).token.equals("") &&
-												weight > eu.musarellatripi.sensors.Values.weightThreshold && //car must be there
-												!trolleyState.equals("stopped")
-											) {
-											
-												val STRING_LENGTH = 10
-												val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-												val randomString = (1..STRING_LENGTH)
-												  .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
-												  .map(charPool::get)
-												  .joinToString("");
-												TOKENID = "t" + SLOTNUM + randomString
-												
-												
-												if(parkingState.get(SLOTNUM).token.equals("")) {
-													parkingState.update(SLOTNUM, true, TOKENID)
-												}
-												Error = false
+												parkingState.get(SLOTNUM).token.equals("")) {
+								
+												if(weight > eu.musarellatripi.sensors.Values.weightThreshold) { //car must be there
+													if(!trolleyState.equals("stopped")) {
+														val STRING_LENGTH = 10
+														val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+														val randomString = (1..STRING_LENGTH)
+														  .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+														  .map(charPool::get)
+														  .joinToString("");
+														TOKENID = "t" + SLOTNUM + randomString
+														
+														
+														if(parkingState.get(SLOTNUM).token.equals("")) {
+															parkingState.update(SLOTNUM, true, TOKENID)
+														}
+														Error = false
 								println("[SERVICE] Generated TOKENID: $TOKENID")
 								updateResourceRep( "handleCarEnter"  
 								)
 								answer("carEnter", "token", "token($TOKENID)"   )  
 								
-												} else {
-												println("$SLOTNUM - $weight")
+													} else { //trolley is stopped
+														Error = true
+								answer("carEnter", "error", "error(trolleystopped)"   )  
+								
+													}
+												} else { //car is not there
+													Error = true
+								answer("carEnter", "error", "error(indoorempty)"   )  
+									
+												}
+											} else {
 												Error = true
 								answer("carEnter", "error", "error(valuesnotvalid)"   )  
 								
@@ -194,7 +202,7 @@ class Parkingservice ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( n
 				}	 
 				state("handlePickUp2") { //this:State
 					action { //it:State
-						if( checkMsgContent( Term.createTerm("sensorValue(VALUE)"), Term.createTerm("sensorValue(STATE)"), 
+						if( checkMsgContent( Term.createTerm("sensorValue(VALUE,SENSORNAME)"), Term.createTerm("sensorValue(DISTANCE,distance)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								
 												val sonarState = payloadArg(0).toInt()
@@ -256,7 +264,6 @@ class Parkingservice ( name: String, scope: CoroutineScope  ) : ActorBasicFsm( n
 						if( checkMsgContent( Term.createTerm("moveDone(MOVE,RESULT)"), Term.createTerm("moveDone(MOVE,RESULT)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList
 								answer("pickUpRequest", "pickUpReply", "pickUpReply(ok)"   )  
-								forward("canEnter", "canEnter(X)" ,"client" ) 
 								forward("startTimer", "startTimer(X)" ,"dtfree" ) 
 						}
 						stateTimer = TimerActor("timer_handlePickUp5", 
