@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+	<link rel="icon" href="../../sprint0/userDocs/img/favicon.png">
+
+	<title>Sprint2</title>
+	<style>
+		body
+		{
+			margin-left:  30px;
+			margin-right: 30px;
+		}
+
+		P
+		{
+			font-family: Tahoma;
+			font-size: 10pt;
+		}
+
+		a, a:visited, a:active, a:link, a:hover {
+			text-decoration: underline;
+			color: #545454;
+			background-color: transparent;
+			font-size: 93%;
+		}
+
+		a:hover {
+			background-color: #cccccc;
+		}
+
+
+		hr {
+			clear: both;
+			height: 1px;
+			color: #242424;
+			background-color: transparent;
+		}
+
+		h1, h2, h3 {
+			color: #242424;
+			clear: left;
+			font: 100% Tahoma, Helvetica, Arial, sans-serif;
+			margin-bottom: 0.5em;
+			padding-top: 0.5em;
+			border-radius: 10px;
+			padding: 5px;
+		}
+
+		top {
+			width: 100%;
+		}
+
+
+		#i {
+			color: #ff1010;
+		}
+		tt{
+			font-family: "Arial";
+			font-size: 90%;
+			color: #006600;
+		}
+		em{
+			font-family: "Arial";
+			font-size: 80%;
+			font-weight: bold;
+			border-style:solid;
+			border-color: #abe876;
+			color: #1632cc;
+		}
+		bc{
+			font-family: "Arial";
+			font-size: 90%;
+			font-weight: bold;
+			color: #990000;
+			background-color: #fcf8c7;
+		}
+		ks{
+			font-family: "Arial";
+			font-weight: bold;
+			color: #0000CD	;
+			font-size: 90%;
+		}
+		kc{
+			font-family: "Arial";
+			font-weight: bold;
+			color: #008000	;
+			font-size: 90%;
+		}
+		pre{
+			font-family: "Consolas";
+			font-size: 85%;
+			background-color: #f5f5f5;
+			border: 1.5px solid silver;
+			padding: 5px;
+		}
+		m{
+			font-family: "Helvetica";
+			line-height: 100%;
+			font-size: 75%;
+		}
+		div.body{
+
+			font-size: 18px;
+		}
+		k{
+			color: #990000;
+			font-weight: bold;
+			font-size: 90%;
+		}
+		h1 {
+			font-size: 150%;
+			background-color: #b2c0ff;
+			padding: 10px;
+		}
+
+		h2 {
+			background-color: #9ed8ff;
+			font-size: 130%;
+		}
+
+		h3 {
+			background-color: #e6ccff;
+			font-size: 100%;
+		}
+		h4 {
+			background-color: #ccffcc;
+			font-size: 100%;
+			width: 95%;
+			border-radius: 5px;
+			padding: 2px;
+		}
+		h5 {
+			background-color: #d5ffb0;
+			font-size: 100%;
+
+		}
+		div.req{
+			background-color: #d9ffb3;
+			font-size: 18px;
+			width: 700px;
+			border: 3px solid green;
+			padding: 15px;
+			margin: 10px;
+		}
+		div.remark{
+			background-color: #E3F2FD;
+			border: 1.5px solid #d5f2ed;
+			padding: 15px;
+			margin: 10px;
+			border-radius: 25px;
+		}
+		table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+
+		ol, ul, li {
+			margin: 0;
+			margin-left: 10px;
+			padding: 0;
+			padding-bottom: 5px;
+		}
+
+		table, th, td {
+			border: 1px solid black;
+		}
+
+		img {
+			border: 1.5px solid #d5f2ed
+
+		}
+
+		a, a:visited, a:active, a:link, a:hover {
+			text-decoration: underline;
+			color: #545454;
+			background-color: transparent;
+		}
+
+		div.wrapdesc{
+			width: 90%;
+			margin: auto;
+		}
+
+		div.imagedesc{
+			width: 85%;
+			margin: auto;
+		}
+	</style>
+</head>
+
+<body>
+
+<div class="body">
+
+	<h2>Sprint Backlog</h2>
+	<div class="remark">
+		In this second sprint, we will add the logic for both the Manager Service and Sensor Service. We will also
+		implement the web server and the GUI for both the client and the manager. The transport trolley will still be mocked.
+		<br>
+
+		The following requirements will be covered:
+		<ul class="requirementsList">
+			<li>The client can book a parking slot through ParkServiceGUI (<k>F1</k>)</li>
+			<li>When client try to do acceptIN or acceptOUT, if the transport trolley is stopped, the client should see
+				an error message (<k>F8</k>)</li>
+			<li>The client can pick up the car by sending the TOKENID through ParkServiceGUI (<k>F9</k>)</li>
+			<li>The parking manager can see the current state of the parking area through ParkServiceStatusGUI (<k>F12</k>)</li>
+			<li>The parking manager should be able to stop the transport trolley when TA > TMAX through
+				ParkServiceStatusGUI (<k>F13</k>)</li>
+			<li>The parking manager should be able to start the transport trolley when it is stopped through
+				ParkServiceStatusGUI (<k>F14</k>)</li>
+			<li>ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX (<k>F15</k>)</li>
+			<li>ParkManagerService should notify the parking manager when the OUTDOOR is not cleaned within DTFREE
+				interval of time (<k>F16</k>)</li>
+		</ul>
+
+	</div>
+
+
+	<h2>Sprint</h2>
+	<div class="remark">
+
+		<h3>ParkingDevicesStatus</h3>
+		The information regarding the trolley state, the fan state and the sensors state are kept inside the kotlin class
+		<code style="font-size: 15px">ParkingDevicesStatus</code>. As the requirements only required us to comunicate the
+		temperature value among all the sensors, in the following code we update only this value. However, should it be
+		necessary to comunicate other sensor values in the future, we saved it in a map inside the
+		<code style="font-size: 15px">ParkingDevicesStatus</code>. In order to send the state, it can be serialized as
+		JSON. <br>
+		Here is reported a UML graph of these classes.
+
+		<img src="img/ParkingDevicesStatusUML.png" style="max-width: 100%" alt="ParkingDevicesStatus UML">
+
+
+		<h3>ManagerService</h3>
+		The ManagerService actor is the component responsible for handling the interaction with the Manager. Its behaviour
+		can be described as a Moore State Machine. In the <k>idle</k> state, it will update the state resource, making it
+		readable through CoAP. From the <k>idle</k> state, it can handle several request and events:
+		<ul>
+			<li>when it receives the reply sensorValue from the thermometer, it will go to the <k>updateSensorReading</k>
+				state. Here it will update the ParkingDevicesStatus with the temperature value.</li>
+			<li>when it receives the request readStatus, it will go to the <k>update</k> state. Here it will update the
+				ParkingDevicesStatus with the trolley state and fan state. It will then send a requestValue to the
+				thermometer. The request readStatus is sent at intervals by the web client, in order to keep the GUI
+				updated.</li>
+			<li>when it receives the request stopTrolley, it will go to the <k>handleStopTrolley1</k> state. If the
+				temperature is over TMAX, it will stop the trolley, otherwise it will reply with an error. It will then
+				go to the <k>update</k> state.</li>
+			<li>when it receives the request resumeTrolley, it will go to the <k>handleResumeTrolley</k> state. Here it
+				will simply forward the request to the trolley. It will then go to the <k>update</k> state.</li>
+			<li>when it receives the event timeout, it will go to the <k>dtFreeTimeout</k> state. Here it will simply set
+				the outdoorAlarm inside the ParkingDevicesStatus to true.</li>
+			<li>when it receives the event carLeftOutdoor, it will go to the <k>resetAlarmOutdoor</k> state. Here it will
+				simply set the outdoorAlarm inside the ParkingDevicesStatus to false.</li>
+		</ul>
+
+		<br>
+		Below is reported the corresponding UML graph. The full model can be found <a href="../core/model.qak">here</a>. <br>
+		<img src="img/ManagerServiceFSM.png" style="max-width: 100%" alt="ManagerService FSM">
+
+		<!-- SensorService, why something -->
+		<h3>SensorService</h3>
+		The SensorService actor is the component responsible for automating the stop and restart of the fan (<k>F15</k>).
+		This task was not assigned to the ManagerService in order to increase the degree of parallelism of the system.
+		It will cycle between the two state, <k>tempLow</k> and <k>tempHigh</k>, when it receives the event underTMAX and
+		aboveTMAX. Within each state it simply send the dispatches to the fan. <br>
+		Below is reported the corresponding UML graph. <br>
+
+		<img src="img/SensorServiceFSM.png" style="max-width: 100%" alt="SensorService FSM">
+
+
+		<h3>Interactions between users and ParkManagerService</h3>
+
+		The User Interface will be a single page application for the clients and another single page application for
+		the parking manager. The application will be accessible via a normal web browser. This way users do not need to
+		install a specific application to use this service and there will be less effort in maintaining one specific
+		application for each Operative System. Of course, the web page will be responsive and usable both on computers
+		and smartphones.<br>
+
+		For this reason, the client side application was written using HTML5, CSS3 and javascript, using jQuery and
+		bootstrap as frameworks for both the graphics elements and the interactive web page.<br>
+		The server instead will be a spring web server. It was chosen in order to use the same code written in kotlin
+		for the model even in the webserver.<br>
+
+		The web server interacts with the ctxservice, the context containing the ParkingService, ManagerService, and the
+		SensorService, via Coap messages. This allows to deploy the web server and the application in two different machines. This also allows
+		to replace one of the component in the future (e.g. a node web server) as long as they continue to use the same
+		communication protocol.<br>
+
+		The requests are forwarded to the ParkingService if they come from a client, and to the ManagerService actor
+		if they come from the parking manager.<br>
+
+		Since it is not required that theParkServiceStatusGUI updates the status in real time, and it is not critical for
+		the manager to see it in real time, we decided not to use observers. Instead, the page will automatically update
+		only the status every ten seconds.<br>
+
+		All the messages between the web server and the ParkingService actor were already defined in sprint 1.<br>
+		The following CoAp messages are exchanged between the web server and the ManagerService actor:
+
+		<table>
+			<tr>
+				<th>MsgType</th>
+				<th>MsgId</th>
+				<th>MsgContent</th>
+			</tr>
+			<tr>
+				<th>Request</th>
+				<td>stopTrolley</td>
+				<td>stopTrolley(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>ok</td>
+				<td>ok(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>error</td>
+				<td>error(temperatureundertmax)</td>
+			</tr>
+			<tr>
+				<th>Request</th>
+				<td>resumeTrolley</td>
+				<td>resumeTrolley(_)</td>
+			</tr>
+			<tr>
+				<td>Reply</td>
+				<td>error</td>
+				<td>error(valuesnotvalid)</td>
+			</tr>
+		</table>
+		<br>
+		A documentation of the API endpoints created is available <a href="openapi.yaml">here</a> in yaml format
+		and <a href="openapi.html">here</a> as an interactive webPage.
+	</div>
+
+	<h2>Testing</h2>
+	<div class="remark">
+		Some new testing classed were added: now it is necessary to test that the managerservice requests works fine,
+		and that the spring application reply correctly to the requests.<br>
+		The tests about managerservice are inserted in <a href="../core/test/eu/musarellatripi/test/TestPlan2.kt">TestPlan2.kt</a>.
+		Every test has a comment that explain "role".<br>
+		The tests about the spring reply are inserted in <a href="../web/src/test/kotlin/eu/musarellatripi/webapp/WebappApplicationTests.kt">WebappApplicationTests.kt</a>.
+
+	</div>
+
+	<h2>Execution</h2>
+	<div class="remark">
+		In order to execute the application, is now necessary, to start both the qak and web server.
+		To start the qak server, it is necessary to go to the sprint2/core folder and run
+		<pre>./execute.bat run</pre>
+		or, on Linux
+		<pre>./execute.sh run</pre>
+		And for the web server, to go to the sprint2/web folder and run
+		<pre>gradle bootRun</pre>
+	</div>
+
+
+	<div class="remark" style="background-color: white; text-align: center">
+		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
+	</div>
+
+</div>
+
+<div style="background-color:rgba(86, 56, 253, 0.9); width:60%;text-align:left;color:white">
+	By Alessandro Musarella <a style="color: white" href="mailto:alessandro.musarella@studio.unibo.it">alessandro.musarella@studio.unibo.it</a><br>
+	By Giulio Tripi <a style="color: white" href="mailto:giulio.tripi@studio.unibo.it">giulio.tripi@studio.unibo.it</a><br>
+	GitHub: <a style="color: white" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a>
+</div>
+</body>
+<script type="application/javascript">
+	let requirements = document.querySelectorAll('ul.requirementsList  > li > k');
+	console.log(requirements.length)
+	for (let i = 0; i < requirements.length; i++) {
+		let req = requirements[i].innerHTML;
+		requirements[i].innerHTML = "<a href='../../sprint0/userDocs/ParkManagerService.html#" + req + "'>" + req + "</a>";
+	}
+
+</script>
+</html>

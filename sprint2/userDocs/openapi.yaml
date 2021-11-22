@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: ParkManagerService
+  description: API specification for ParkServiceGUI and ParkServiceStatusGUI
+  version: 1.0.0
+servers:
+  - url: 'https://example.com'
+    description: "Main server"
+paths:
+  /api/enterRequest:
+    post:
+      summary: Client makes an enter request
+      description: Client can make an enter request
+      operationId: enterRequest
+      responses:
+        200:
+          description: A JSON object with the requested SLOTNUM
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/enterRequestOk'   #must be single and not double apex
+                  - $ref: '#/components/schemas/enterRequestFail'
+  /api/carEnter:
+    post:
+      summary: Client wants to park his car in front of INDOOR
+      description: Must be done ONLY after enterRequest
+      operationId: carEnter
+      parameters:
+        - in: query
+          name: SLOTNUM
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+          description: The SLOTNUM assigned by the system and returned by enterRequest
+      responses:
+        200:
+          description: A JSON object with the TOKENID
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/carEnterOk'
+                  - $ref: '#/components/schemas/carEnterFail'
+  /api/pickUp:
+    post:
+      summary: The client wants to pick up his car
+      description: Must be done only after carEnter
+      operationId: pickUp
+      parameters:
+        - in: query
+          name: TOKENID
+          schema:
+            type: string
+          description: The TOKENID assigned by the system and returned by carEnter
+      responses:
+        200:
+          description: An indicator if the request was handled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pickUp'
+  /api/manager/status:
+    get:
+      summary: Get the current status of the parking area
+      description: Used by parking manager
+      operationId: getStatus
+      responses:
+        200:
+          description: The state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/parkingState'
+  /api/manager/setTrolley/{state}:
+    post:
+      summary: Set trolley status
+      description: Used by parking manager
+      operationId: setTrolleyState
+      parameters:
+        - in: path
+          name: state
+          description: The new state of the trolley
+          schema:
+            type: string
+            enum:
+              - stopped
+              - working
+      responses:
+        200:
+          description: A confirm of the change. Could fail only if `state` is `stopped`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/setTrolleyState'
+
+
+components:
+  schemas:
+    enterRequestOk:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        SLOTNUM:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: if equal to 0, no more space is available
+    enterRequestFail:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        errorMessage:
+          type: string
+          enum:
+            - weighttoohigh
+            - trolleystopped
+            - connectionError
+          description: >
+            Error reason:<br>
+            <ul>
+            <li> `weighttoohigh` - There is another car if front of INDOOR<br>
+            <li> `trolleystopped` - The trolley is stopped<br>
+            <li> `connectionError` - Other error, e.g. connection error
+            </ul>
+    carEnterOk:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        TOKENID:
+          type: string
+          description: The TOKENID necessary to pick Up the car
+    carEnterFail:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        errorMessage:
+          type: string
+          enum:
+            - trolleystopped
+            - indoorempty
+            - valuesnotvalid
+            - connectionError
+    pickUp:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        errorMessage:
+          required: false
+          type: string
+          description: Only set if ok is false
+          enum:
+            - wrongtoken
+            - outdoorbusy
+            - trolleystopped
+            - connectionError
+    parkingState:
+      type: object
+      properties:
+        sensors:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              measure:
+                type: number
+              time:
+                type: integer
+                description: Last update timestamp
+              name:
+                type: string
+                description: Name of the sensor
+          example:
+            temperature:
+              measure: 25.5
+              time: 1637506346
+              name: temperature
+        fanState:
+          type: string
+          enum:
+            - OFF
+            - ON
+        trolleyState:
+          type: string
+          enum:
+            - IDLE
+            - WORKING
+            - STOPPED
+        outdoorAlarm:
+          type: boolean
+          description: true if alarm is fired, false otherwise
+    setTrolleyState:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: True if request was successfully, false otherwise. If false, errorMessage is set
+        errorMessage:
+          type: string
+          required: false
+          description: Only set if ok is false
+          enum:
+            - temperatureundertmax
