@@ -15,13 +15,13 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 repositories {
 	mavenCentral()
 	flatDir {
-		dir(file("../unibolibs"))
+		dir(file("../../unibolibs"))
 	}
 }
 
 dependencies {
 	//implementation(files("../unibolibs/parkingService4-1.0.jar"))
-	implementation(":it.unibo.parkingService4:1.0")
+	implementation(":it.unibo.parkingService:1.0")
 	implementation("org.json:json:20210307")
 	implementation("com.google.code.gson:gson:2.8.9")
 	implementation("org.eclipse.californium:californium-core:3.0.0")
