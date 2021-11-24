@@ -82,6 +82,7 @@ paths:
         - in: path
           name: state
           description: The new state of the trolley
+          required: true
           schema:
             type: string
             enum:
