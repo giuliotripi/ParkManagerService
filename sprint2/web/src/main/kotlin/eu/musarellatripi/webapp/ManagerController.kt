@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 class ManagerController {
     @GetMapping("/manager")
     fun homePage(model: Model): String {
+        model.addAttribute("TMAX", Values.TMAX)
         return "manager"
     }
 
