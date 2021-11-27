@@ -32,20 +32,28 @@
 	<script>
 		$(function () {
 			$("#book").on("click", function () {
+				$("#book").prop("disabled", true);
 				$.post("/api/enterRequest", function (response) {
 					let data = $.parseJSON(response);
+					$("#book").prop("disabled", false);
 					if(data.ok) {
-						localStorage.setItem("SLOTNUM", data.SLOTNUM);
-						$("#enterRequest").hide();
-						$("#carEnter").show();
+						if(data.SLOTNUM === 0) {
+							alert("No more parking slots available")
+						} else {
+							localStorage.setItem("SLOTNUM", data.SLOTNUM);
+							$("#enterRequest").hide();
+							$("#carEnter").show();
+						}
 					} else {
 						alert("Error: " + data.errorMessage);
 					}
 				});
 			});
 			$("#carEnterButton").on("click", function () {
+				$("#carEnterButton").prop("disabled", true);
 				$.post("/api/carEnter", {SLOTNUM: localStorage.getItem("SLOTNUM")}, function (response) {
 					let data = $.parseJSON(response);
+					$("#carEnterButton").prop("disabled", false);
 					if(data.ok) {
 						localStorage.removeItem("SLOTNUM");
 						localStorage.setItem("TOKENID", data.TOKENID);
@@ -64,10 +72,10 @@
 				$("#pickUpButton").prop("disabled", true);
 				$.post("/api/pickUp", {TOKENID: $("#tokenInput").val()}, function (response) {
 					let data = $.parseJSON(response);
+					$("#pickUpButton").prop("disabled", false);
 					if(data.ok) {
 						alert("PickUp success");
 						localStorage.removeItem("TOKENID");
-						$("#pickUpButton").prop("disabled", false);
 						$("#pickUp").hide();
 						$("#enterRequest").show();
 					} else {
@@ -85,6 +93,13 @@
 				$("#justParked").show();
 				$("#wantPickUp").hide();
 			}
+			$("#reset").on("click", function() {
+				if(confirm("Do you want do delete saved data?")) {
+					localStorage.removeItem("TOKENID");
+					localStorage.removeItem("SLOTNUM");
+					location.reload();
+				}
+			});
 		});
 	</script>
 </head>
@@ -147,7 +162,7 @@
 
 
 <footer class="container-fluid">
-	<p>Project for the course Ingegneria dei Sistemi Software M, UNIBO</p>
+	<p>Project for the course Ingegneria dei Sistemi Software M, <span id="reset">UNIBO</span></p>
 	<p>By Alessandro Musarella <a style="color: grey" href="mailto:alessandro.musarella@studio.unibo.it">alessandro.musarella@studio.unibo.it</a><br>
 		By Giulio Tripi <a style="color: grey" href="mailto:giulio.tripi@studio.unibo.it">giulio.tripi@studio.unibo.it</a><br>
 		GitHub: <a style="color: grey" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a></p>
