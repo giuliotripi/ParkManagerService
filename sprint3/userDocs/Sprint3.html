@@ -211,11 +211,32 @@
 		In order to send commands to the transport trolley, we used the basicrobot to make basic moves as forward, left,
 		etc. So, when a user request to enter or pick up his car, the <k>parkingservice</k> actor sends a macro request
 		to the <k>trolley</k> actor (such as <k>moveToIn</k>). At this point the <k>trolley</k> actor breaks down the
-		request into basic moves and sends them to the <k>basicrobot</k> that commands the trolley.<br>
+		request into basic moves (using the planner) and sends them to the <k>basicrobot</k> that commands the trolley.<br>
+
+		After every step, the trolley actor checks that the transport trolley executed the action correctly. If for some
+		reasons the trolley fails to execute the move, it is emitted an event captured by managerservice that is
+		sent to the parking manager through the ParkServiceStatusGUI.
+
+		In case of failure, since the trolley cannot automatically remove the obstacle, it is necessary the intervention
+		of the parking manager, that has to command the trolley manually to finish the move and put it back to home and
+		then restart the qak application.
+		-->
 	</div>
 
 	<h2>Testing</h2>
 	<div class="remark">
+		For this sprint, it was only implemented a mocked actor, so no other tests were done.
+	</div>
+
+	<h2>Execution</h2>
+	<div class="remark">
+		In order to execute the application, is now necessary, to start both the qak and web server.
+		To start the qak server, it is necessary to go to the sprint3 folder and run
+		<pre>./execute.bat run</pre>
+		or, on Linux
+		<pre>./execute.sh run</pre>
+		And for the web server, to go to the sprint2/web folder and run
+		<pre>gradle bootRun</pre>
 	</div>
 
 	<h2>Sprint Review</h2>
