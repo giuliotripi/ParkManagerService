@@ -208,6 +208,49 @@
 
 	<h2>Sprint</h2>
 	<div class="remark">
+		<!-- introduction, trolley that wraps basic robot, macro moves reduced in micro moves -->
+		<h3>Transport Trolley</h3>
+		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
+		the parking. It wraps the basicrobot provided by the customer, which is only capable of executing basic commands
+		(e.g. move forward, turn, ...), and provides high level macro moves (e.g. moveToHome, moveToIn, ...). In order
+		to do so, it utilizes the planner provided by the customer (""""link""""). Given the starting and ending point, this
+		planner is capable to convert them in a sequence of basic moves.<br>
+		It can be visualized as a multi layer system, as expressed in the image on the right. When it receives a macro
+		moves, it breaks it down in multiple basic commands, and it sends them to the basic robot. The basic robot will
+		then send the """commands""" to the virtual environment or to the physical robot, depending on the """distribution"""
+		<!-- TODO: immagine a lato, trolley a strati? -->
+
+		<h3>Behaviour</h3>
+		<!-- transport trolley, old fsm vs new fsm -->
+		In the first document (""""link""""), we described the trolley behaviour using only the three state provided by
+		the customer: <k>idle</k>, <k>working</k>, and <k>stopped</k>. In this sprint we have expanded the <k>working</k>,
+		dividing it in various substates. We also decided to change how it shifts between the two states <k>idle</k> and
+		<k>working</k>: now at the end of each macro moves it goes back to idle. Below is reported the Finite State Machine
+		representation, and """here""" can be found the implementation with the qactor. <br>
+
+		<img src="img/trolleyFSM.png" style="max-width: 100%" alt="Transport Trolley FSM">
+
+		At first the trolley goes to <k>idle</k>. If it receives the stop message from the manager, it goes to the
+		<k>stopped</k> state. From <k>idle</k>, it can receive each macro moves and it will go to the corresponding states:
+		<k>moveToIn</k>, <k>moveToSlotIn</k>, <k>moveToOut</k>, <k>moveToSlotOut</k> and <k>moveToHome</k>. In these state
+		it will simply use the planner to plan the route, and then go immediately to <k>moving</k>. In the <k>moving</k>
+		state, it will get the next move to do from the planner, and the go to <k>executeMove</k>. If there are no more
+		moves to do, it will instead return to <k>idle</k>. In <k>executeMove</k> it will simply forward the command to
+		the basicRobot, and then return to <k>moving</k>. However, it was necessary to add another state to wait for the
+		response of the single step forward, because it is a request, while the turn is a simple forward. In this way, we
+		can handle case of failure in the trolley.
+
+		<h3>Trolley Failure</h3>
+		<!-- necessity to introduce error management, change to the manager gui -->
+		<!-- the manager must free the trolley, and send the trolley to home alone, map update -->
+		When the basicRobot is not able to complete a step, it will send a stepfail message. In the virtual environment,
+		it could be caused by some error in the parameters of the map, while in a real world scenario, it could be an
+		impediment on the path of the trolley. In agreement with the customer, we decided to put the trolley in the
+		<k>stopped</k> state in the case of failure, and notify the manager via the gui and a sound notification. The
+		manager must then clear the path of the trolley, and then reposition it in the home position. This choice was made
+		because after a failure in a real world scenario we could not be sure of the exact position of the robot.
+
+		<!--
 		In order to send commands to the transport trolley, we used the basicrobot to make basic moves as forward, left,
 		etc. So, when a user request to enter or pick up his car, the <k>parkingservice</k> actor sends a macro request
 		to the <k>trolley</k> actor (such as <k>moveToIn</k>). At this point the <k>trolley</k> actor breaks down the
@@ -225,7 +268,7 @@
 
 	<h2>Testing</h2>
 	<div class="remark">
-		For this sprint, it was only implemented a mocked actor, so no other tests were done.
+		For this sprint, it was only implemented a mocked actor, so no other tests were added.
 	</div>
 
 	<h2>Execution</h2>
