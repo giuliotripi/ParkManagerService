@@ -1,9 +1,12 @@
 package eu.musarellatripi.domain
 
-class ParkingSlotInfo internal constructor(val slotNum: Int, val reserved: Boolean, val token: String) {
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ParkingSlotInfo(val slotNum: Int, val reserved: Boolean, val token: String) {
 
     override fun toString(): String {
-        return "[" + slotNum + ", " + reserved + ", " + token + "]"
+        return "[" + slotNum + ", " + reserved + ", \"" + token + "\"]"
     }
 
     /*fun getSlotNum() : Int {

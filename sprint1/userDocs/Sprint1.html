@@ -259,14 +259,14 @@
 					inside the parking. In this way we can deal with clients entering the parking in a different order
 					from that of their enterRequest.<br/>
 
-					<!--To maintain persistence between different startup of the system, we decided to save the state in a
+					To maintain persistence between different startup of the system, we decided to save the state in a
 					JSON file. We opted for a simple file instead of a database because the state is small and because
 					it is less resource demanding. However, we have made the design modular, so if in the future a database
-					will be needed, you will only need to reimplement the interface.<br>-->
+					will be needed, you will only need to reimplement the interface.<br>
 
-					We opted for saving the state in a map kept in memory instead of a database because the state is
+					<!--We opted for saving the state in a map kept in memory instead of a database because the state is
 					small and because it is less resource demanding. However, we have made the design modular, so if in
-					the future a database will be needed, you will only need to reimplement the interface.<br>
+					the future a database will be needed, you will only need to reimplement the interface.<br>-->
 
 					Those classes can be found in the <code style="font-size: 15px">kotlinCode</code> folder, under the
 					<code style="font-size: 15px">eu.musarellatripi.domain</code> package.

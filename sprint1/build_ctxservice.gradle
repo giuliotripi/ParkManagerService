@@ -2,7 +2,7 @@
 ================================================================================
 build_ctxservice.gradle
 GENERATED ONLY ONCE
-USAGE:	 
+USAGE:
   	gradle  -b build_ctxservice.gradle eclipse		//to set the dependency on the library
 	gradle  -b build_ctxservice.gradle distZip
 	gradle  -b build_ctxservice.gradle -q tasks --all
@@ -30,6 +30,7 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
+    implementation "com.google.code.gson:gson:2.8.9"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 //COROUTINE
     compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-common', version: '1.1.0'
@@ -48,8 +49,8 @@ dependencies {
 	compile group: 'org.eclipse.californium', name: 'californium-core', version: '2.0.0-M12'
 	// https://mvnrepository.com/artifact/org.eclipse.californium/californium-proxy
 	compile group: 'org.eclipse.californium', name: 'californium-proxy', version: '2.0.0-M12'
-//LOG4j	
-	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25' 
+//LOG4j
+	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 //MONGO
 	// https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver
 	//compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.8.2'
@@ -58,7 +59,7 @@ dependencies {
     compile name: 'uniboInterfaces'
     compile name: '2p301'
     compile name: 'it.unibo.qakactor-2.4'
- 
+
     //For p2p two-way connections (TCP, UDP, BTH, Serial ...)
     compile name: 'unibonoawtsupports'
 
