@@ -198,37 +198,45 @@
 	<div class="remark">
 		For this third sprint, we will cover the following requirements:
 		<ul>
-			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the OUTDOOR by sending command to a transport trolley
-				(<k>F4</k>)</li>
+			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the
+				OUTDOOR by sending command to a transport trolley (<k>F4</k>)</li>
 			<li>The trolley must go back to home when there are no more requests available (<k>F17</k>)</li>
 			<li>The trolley should not walk over parking-slots or obstacles (<k>F18</k>)</li>
 		</ul>
 	</div>
 
-
 	<h2>Sprint</h2>
 	<div class="remark">
-		<!-- introduction, trolley that wraps basic robot, macro moves reduced in micro moves -->
 		<h3>Transport Trolley</h3>
-		The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
-		the parking. It wraps the basicrobot provided by the customer, which is only capable of executing basic commands
-		(e.g. move forward, turn, ...), and provides high level macro moves (e.g. moveToHome, moveToIn, ...). In order
-		to do so, it utilizes the planner provided by the customer (""""link""""). Given the starting and ending point, this
-		planner is capable to convert them in a sequence of basic moves.<br>
-		It can be visualized as a multi layer system, as expressed in the image on the right. When it receives a macro
-		moves, it breaks it down in multiple basic commands, and it sends them to the basic robot. The basic robot will
-		then send the """commands""" to the virtual environment or to the physical robot, depending on the """distribution"""
-		<!-- TODO: immagine a lato, trolley a strati? -->
+		<table>
+			<tr>
+				<td>
+					The transport trolley is the core entity of the project, as it is responsible for transporting the cars around
+					the parking. It wraps the basicrobot provided by the customer, which is only capable of executing basic commands
+					(e.g. move forward, turn, ...), and provides high level macro moves (e.g. moveToHome, moveToIn, ...). In order
+					to do so, it utilizes the <a href="https://htmlpreview.github.io/?https://github.com/anatali/issLab2021/blob/main/it.unibo.planner20/userDocs/LabPlanner.html">planner provided by the customer</a>. Given the starting and ending point, this
+					planner is capable to convert them in a sequence of basic moves.<br>
+					It can be visualized as a multi layer system, as expressed in the image on the right. When it receives a macro
+					moves, it breaks it down in multiple basic commands, and it sends them to the basic robot. The basic robot will
+					then send the commands to the virtual environment or to the physical robot, depending on the configuration.
+				</td>
+				<td>
+					<img src="img/layered-architecture.png" alt="Layered architecture" style="max-height: 400px">
+				</td>
+			</tr>
+		</table>
+
+
 
 		<h3>Behaviour</h3>
-		<!-- transport trolley, old fsm vs new fsm -->
-		In the first document (""""link""""), we described the trolley behaviour using only the three state provided by
-		the customer: <k>idle</k>, <k>working</k>, and <k>stopped</k>. In this sprint we have expanded the <k>working</k>,
-		dividing it in various substates. We also decided to change how it shifts between the two states <k>idle</k> and
-		<k>working</k>: now at the end of each macro moves it goes back to idle. Below is reported the Finite State Machine
-		representation, and """here""" can be found the implementation with the qactor. <br>
+		In the <a href="../../sprint0/userDocs/ParkManagerService.html">first document</a>, we described the trolley
+		behaviour using only the three state provided by the customer: <k>idle</k>, <k>working</k>, and <k>stopped</k>.
+		In this sprint we have expanded the <k>working</k>, dividing it in various substates. We also decided to change
+		how it shifts between the two states <k>idle</k> and <k>working</k>: now at the end of each macro moves it goes
+		back to idle. Below is reported the Finite State Machine representation, and <a href="../core/src/model.qak">here</a>
+		can be found the implementation with the qactor. <br>
 
-		<img src="img/trolleyFSM.png" style="max-width: 100%" alt="Transport Trolley FSM">
+		<img src="img/trolleyFSM.png" style="max-width: 100%" alt="Transport Trolley FSM"> <br>
 
 		At first the trolley goes to <k>idle</k>. If it receives the stop message from the manager, it goes to the
 		<k>stopped</k> state. From <k>idle</k>, it can receive each macro moves and it will go to the corresponding states:
@@ -241,8 +249,6 @@
 		can handle case of failure in the trolley.
 
 		<h3>Trolley Failure</h3>
-		<!-- necessity to introduce error management, change to the manager gui -->
-		<!-- the manager must free the trolley, and send the trolley to home alone, map update -->
 		When the basicRobot is not able to complete a step, it will send a stepfail message. In the virtual environment,
 		it could be caused by some error in the parameters of the map, while in a real world scenario, it could be an
 		impediment on the path of the trolley. In agreement with the customer, we decided to put the trolley in the
@@ -250,42 +256,32 @@
 		manager must then clear the path of the trolley, and then reposition it in the home position. This choice was made
 		because after a failure in a real world scenario we could not be sure of the exact position of the robot.
 
-		<!--
-		In order to send commands to the transport trolley, we used the basicrobot to make basic moves as forward, left,
-		etc. So, when a user request to enter or pick up his car, the <k>parkingservice</k> actor sends a macro request
-		to the <k>trolley</k> actor (such as <k>moveToIn</k>). At this point the <k>trolley</k> actor breaks down the
-		request into basic moves (using the planner) and sends them to the <k>basicrobot</k> that commands the trolley.<br>
+		In addition to the messages listed in sprint1 between the spring webserver and the parkingservice, we added a
+		new response, sent when the system can not let the car in/out due to a temporary error of the trolley.
+		It is sent only in response to carEnter and pickUpRequest and is <code style="font-size: 15px">error(trolleyerror)</code>.
 
-		After every step, the trolley actor checks that the transport trolley executed the action correctly. If for some
-		reasons the trolley fails to execute the move, it is emitted an event captured by managerservice that is
-		sent to the parking manager through the ParkServiceStatusGUI.
-
-		In case of failure, since the trolley cannot automatically remove the obstacle, it is necessary the intervention
-		of the parking manager, that has to command the trolley manually to finish the move and put it back to home and
-		then restart the qak application.
-		-->
 	</div>
 
 	<h2>Testing</h2>
 	<div class="remark">
-		For this sprint, it was only implemented a mocked actor, so no other tests were added.
+		For this sprint, it was only implemented a mocked actor, so no other tests were added. The older tests were run
+		to check that the new functionalities do not break the application.
 	</div>
 
 	<h2>Execution</h2>
 	<div class="remark">
-		In order to execute the application, is now necessary, to start both the qak and web server.
-		To start the qak server, it is necessary to go to the sprint3 folder and run
+		In order to execute the application, is now necessary to start both the qak and web server.
+		To start the qak server, it is necessary to go to the sprint3/core folder and run
 		<pre>./execute.bat run</pre>
 		or, on Linux
 		<pre>./execute.sh run</pre>
-		And for the web server, to go to the sprint2/web folder and run
+		And for the web server, to go to the sprint3/web folder and run
 		<pre>gradle bootRun</pre>
+		Since we are now talking with another entity, it is even necessary to start the basicrobot actor and the virtual
+		environment, going into the root folder and executing
+		<pre>docker-compose -f basicrobotVirtual.yaml up</pre>
 	</div>
 
-	<h2>Sprint Review</h2>
-	<div class="remark">
-		<!-- present current work, introduce future developments -->
-	</div>
 	<div class="remark" style="background-color: white; text-align: center">
 		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
 	</div>
