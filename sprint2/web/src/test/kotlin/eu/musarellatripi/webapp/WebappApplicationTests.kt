@@ -62,8 +62,7 @@ class WebappApplicationTests(@Autowired val restTemplate: TestRestTemplate) {
 		assertThat(entity1.body).contains("true")
 
 		val state1JSON = restTemplate.getForEntity<String>("/api/manager/status")
-		println(CoapTalker.respToJson(state1JSON.body!!)!![3])
-		val state1 = Gson().fromJson(CoapTalker.respToJson(state1JSON.body!!)!![3], ParkingDevicesStatus::class.java).trolleyState;
+		val state1 = Gson().fromJson(state1JSON.body!!, ParkingDevicesStatus::class.java).trolleyState;
 
 		assertThat(state1).isNotEqualTo(TrolleyState.valueOf("STOPPED"))
 
@@ -73,7 +72,7 @@ class WebappApplicationTests(@Autowired val restTemplate: TestRestTemplate) {
 		assertThat(entity2.body).contains("true")
 
 		val state2JSON = restTemplate.getForEntity<String>("/api/manager/status")
-		val state2 = Gson().fromJson(CoapTalker.respToJson(state2JSON.body!!)!![3], ParkingDevicesStatus::class.java).trolleyState;
+		val state2 = Gson().fromJson(state2JSON.body!!, ParkingDevicesStatus::class.java).trolleyState;
 
 		assertThat(state2).isEqualTo(TrolleyState.valueOf("STOPPED"))
 
