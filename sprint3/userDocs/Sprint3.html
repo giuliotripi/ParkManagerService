@@ -197,7 +197,7 @@
 	<h2>Sprint Backlog</h2>
 	<div class="remark">
 		For this third sprint, we will cover the following requirements:
-		<ul>
+		<ul class="requirementsList">
 			<li>The system can transport the cars from the INDOOR to the parking slots, and from the parking slots to the
 				OUTDOOR by sending command to a transport trolley (<k>F4</k>)</li>
 			<li>The trolley must go back to home when there are no more requests available (<k>F17</k>)</li>
@@ -294,4 +294,13 @@
 	GitHub: <a style="color: white" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a>
 </div>
 </body>
+<script type="application/javascript">
+	let requirements = document.querySelectorAll('ul.requirementsList  > li > k');
+	console.log(requirements.length)
+	for (let i = 0; i < requirements.length; i++) {
+		let req = requirements[i].innerHTML;
+		requirements[i].innerHTML = "<a href='../../sprint0/userDocs/ParkManagerService.html#" + req + "'>" + req + "</a>";
+	}
+
+</script>
 </html>
