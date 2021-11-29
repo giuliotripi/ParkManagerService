@@ -196,14 +196,18 @@
 
 	<h2>Sprint Backlog</h2>
 	<div class="remark">
-		For this fourth sprint, we will cover the following requirements:
+		For this fourth and final sprint, we will cover the following requirements:
 		<ul class="requirementsList">
-			<li>Implement all mock sensors to real sensors</li>
-			<li>Make a user interface to change mock sensor values (to show better to the customer how it works)</li>
 			<li>Creation of a log to track action done in the system and exchanged messages (<k>F19</k>)</li>
 			<li>Automatic mechanism of log analysis (<k>F20</k>)</li>
-			<li>Deploy mechanism</li>
 		</ul>
+		<br>
+		We will also implement all the sensors which were mocked so far. At the same time, for demonstration purposes we
+		will build a user interface to control the mock sensors. In this way it will be easier to show all the possible
+		situation inside the parking area.
+		<br>
+		Finally, we will implement better deploy mechanism through Docker, in order to make the system fast and easy to
+		deploy.
 	</div>
 
 
@@ -215,19 +219,19 @@
 		When a sensor actor receives a request, it executes a shell command that will print the value to stdout. This value
 		will then be read from the actor, which will use it to reply to the getValue request.
 		<br>
-		All the sensors will be connected to Raspberry Pi devices. This because they are low-cost devices with a Wi-Fi				(?)
-		chip built onboard and a complete operative system. This choice allows to push updates from remote (in opposition
-		to Arduino that requires a Wi-Fi module and must be updated on site or with an additional hardware).
+		All the sensors will be connected to a different Raspberry Pi device, a low-cost single board computer . We chose
+		Raspberry Pi over Arduino because the Raspberry has a built-in Wi-Fi module, and a complete operative system.
+		This allows to push updates from remote, which cannot be done on Arduino.
 		<br>
-		The choice is a Raspberry Pi 0 WH connected to each physical device.
-		The sensors are a DS18B20 for temperature <!-- already written in problem analysis -->
-		an ultrasonic distance sensor and a weight sensor that return a number equal to 0 if there is no weight and 1
-		if there is weight (like a button). The image below represents the connections of the sensors to the
-		raspberry pis. The weight sensor needs to be connected to a pin which has a pull down resistance enabled.<br>
+		In particular we have chosen a Raspberry Pi 0 WH. The sensors are a DS18B20 for temperature, an ultrasonic
+		distance sensor HC-SR04. For the weight sensor we will use a simple button, that return 0 if there is a car,
+		and 1 otherwise. The image below represents the connections of the sensors to the Raspberry Pis. The weight
+		sensor needs to be connected to a pin which has a pull down resistance enabled.
+		<br>
 		<img src="img/sensors.png" alt="Sensors schema"><br>
-		Instead, the fan is a generic device that is connected to a relay and is powered on and off by the raspberry pi.
+		Instead, the fan is a generic device that is connected to a relay and is powered on and off by the Raspberry Pi.
 		This way, there are no requirements on the cooling system, except that it can be switched on and off without
-		problems. The image below represents the connections of the fan to the raspberry pi.<br>
+		problems. The image below represents the connections of the fan to the Raspberry Pi.<br>
 		<img src="img/fan.png" alt="Fan schema"><br>
 
 		To make an easy-to-deploy and maintainable configuration for the raspberry pi, we created an
@@ -240,18 +244,18 @@
 		and the complete documentation of ansible could be found <a href="https://docs.ansible.com/ansible/latest/index.html">here</a>
 
 		<h3>User interface to update mock sensor values</h3>
-		In order to allow a demonstration of the system, it was developed a small application that allow a user to
-		change the values of the mock sensors to make it possible to the developers to show how the values of
-		the sensors changes the behaviour of the system.
+		In order to allow a demonstration of the system, it was developed a small application that allows to change the
+		values of the mock sensors, in order to make it possible for the developers to show how the values of the
+		sensors changes the behaviour of the system.<br>
 		<pre>./execute.sh mockClient</pre>
 
-		<h3>Creation of a log</h3>
-		For logging, all the incoming requests to the web server are logged. Since for deployment we will use docker,
-		the docker's log mechanism will be used.<br>
-		In this case, it is only necessary to output the information in ClientController and ManagerController to have
-		them saved by docker.<br>
+		<h3>Log creation</h3>
+		The information that we will log are the incoming requests to the web server. Since we already use docker for the
+		deployment, we will utilize its log mechanism.<br>
+		Docker will automatically save to log every time something is printed to stdout, so we just have to output the
+		information in ClientController and ManagerController.<br>
 		To see the logs for a specific container, it is necessary to run
-		<pre>docker logs _containerName_</pre>
+		<pre>docker logs _containerName_</pre>.<br>
 		A detailed guide about how <k>docker logs</k> works and all its advanced option, is available
 		<a href="https://docs.docker.com/engine/reference/commandline/logs/">here</a>.
 		<br>
@@ -264,12 +268,14 @@
 		All log analysis will be done by an external framework that will be chosen by the customer in a future time.
 
 		<h3>Deploy mechanism</h3>
-		The two applications, the core part and the web part, will be put inside two separate docker containers, in
-		order to distribute an application that do not need additional installation or configuration.<br>
 
-		In order to have the two docker images updated without user intervention, all the push to master on GitHub
-		will fire an action that pushes the new image to docker.io repository.<br>
-		This configuration is saved in the <a href="../../.github/workflows/docker.yaml">.github/workflows/docker.yaml</a> file.
+
+		The two applications, the core part and the web part, will be put inside two separate docker containers, to make
+		the distribution and deployment fast and easy, without the need of additional installation or configuration.<br>
+
+		In order to have the two docker images updated without user intervention, every time that there is an update on
+		the master branch on GitHub, the new image is pushed automatically to the docker.io repository.<br>
+		This is made possible by the <a href="../../.github/workflows/docker.yaml">.github/workflows/docker.yaml</a> file.
 
 		TODO:
 		- SENSORS
@@ -281,7 +287,8 @@
 
 	<h2>Testing</h2>
 	<div class="remark">
-		At this point, all tests were made in previous sprints. It remains important to execute tests in order to check
+		There was no need to add further tests. However, it remains important to execute tests in order to check that
+		everything still work.
 	</div>
 
 	<h2>Execution</h2>
@@ -299,14 +306,6 @@
 		<br>
 		As an alternative, always after starting the robot, it is now possible to execute the application as described in the
 		<a href="../../sprint0/userDocs/ParkManagerService.html#deployment">deployment section</a> of sprint0.
-	</div>
-
-	<h2>Sprint Review</h2>
-	<div class="remark">
-		<!-- present current work, introduce future developments -->
-	</div>
-	<div class="remark" style="background-color: white; text-align: center">
-		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
 	</div>
 
 </div>
