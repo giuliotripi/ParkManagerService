@@ -1,0 +1,60 @@
+- hosts: raspberry
+  become: yes
+  tasks:
+    - name: Install required libraries
+      apt:
+        name:
+          - python3-pip
+          - openjdk-8-jdk
+          - openjdk-8-jre
+
+    - name: Install pip3 libraries
+      pip:
+        executable: pip3
+        name:
+          - w1thermsensor
+          - requests
+          - RPi.GPIO
+
+
+    # after installation, /opt/gradle/gradle-7.2 must be set in $PATH
+
+    - name: Check if gradle is already installed
+      stat:
+        path: /opt/gradle/gradle-7.2
+      register: p
+    - name: Install gradle
+      block:
+        - name: Create gradle dir
+          file:
+            path: /opt/gradle
+            owner: root
+            group: root
+            mode: "0755"
+            state: directory
+        - name: Download gradle
+          get_url:
+            url: "https://services.gradle.org/distributions/gradle-7.2-bin.zip"
+            dest: /tmp/gradle.zip
+            mode: "0600"
+            force: yes
+        - name: Unzip gradle in dest
+          command:
+            cmd: unzip -d /opt/gradle /tmp/gradle.zip
+            creates: /opt/gradle/gradle-7.2
+      when: not p.stat.exists
+
+    - name: Add w1-gpio to boot config
+      lineinfile: cat  | grep -v "" > "$tmp"
+        dest: /boot/config.txt
+        regexp: '^dtoverlay=w1-gpio$'
+        line: 'dtoverlay=w1-gpio'
+
+    # ansible-galaxy collection install community.general
+    - name: load kernel modules
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - w1-gpio
+        - w1-therm

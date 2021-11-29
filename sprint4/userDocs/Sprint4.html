@@ -209,11 +209,11 @@
 
 	<h2>Sprint</h2>
 	<div class="remark">
-		<h3>Implement all mock sensors</h3>
-		Each sensor will remain a QActor, but this time it will be in a different context. In this way it could be
-		placed in a remote location and continue to act as the mock sensor.
-		Each sensor actor will maintain his structure and, upon request, will execute a shell command that find the
-		temperature and prints it to stdin. At this point the QActor reads it and reply to the getValue request.
+		<h3>Sensors implementation</h3>
+		Having used the QActors, we won't need to change the structure in the qak model. However, in order to place each
+		sensor in a different location, we will need to place each QActor in a different context.
+		When a sensor actor receives a request, it executes a shell command that will print the value to stdout. This value
+		will then be read from the actor, which will use it to reply to the getValue request.
 		<br>
 		All the sensors will be connected to Raspberry Pi devices. This because they are low-cost devices with a Wi-Fi				(?)
 		chip built onboard and a complete operative system. This choice allows to push updates from remote (in opposition
@@ -230,7 +230,14 @@
 		problems. The image below represents the connections of the fan to the raspberry pi.<br>
 		<img src="img/fan.png" alt="Fan schema"><br>
 
-		ANSIBLE <a href="../devices/raspberry.yml"></a>
+		To make an easy-to-deploy and maintainable configuration for the raspberry pi, we created an
+		<a href="../devices/raspberry.yml">ansible</a> configuration file that contains all the information to configure
+		the raspberry pi and make it ready to run the application.<br>
+		The ansible file could be run multiple times and if edited, changes the configuration according to the modifications
+		done.<br>
+		The command to run the script is
+		<pre>ansible-playbook raspberry.yml</pre>
+		and the complete documentation of ansible could be found <a href="https://docs.ansible.com/ansible/latest/index.html">here</a>
 
 		<h3>User interface to update mock sensor values</h3>
 		In order to allow a demonstration of the system, it was developed a small application that allow a user to
@@ -266,6 +273,8 @@
 
 		TODO:
 		- SENSORS
+			- code for reading from sensor and output
+			- code for reading stdout from qak ?
 		- LOGS in web
 		- ANSIBLE configuration for raspi
 	</div>
