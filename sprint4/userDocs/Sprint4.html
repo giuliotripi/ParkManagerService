@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+	<link rel="icon" href="../../sprint0/userDocs/img/favicon.png">
+
+	<title>Sprint4</title>
+	<style>
+		body
+		{
+			margin-left:  30px;
+			margin-right: 30px;
+		}
+
+		P
+		{
+			font-family: Tahoma;
+			font-size: 10pt;
+		}
+
+		a, a:visited, a:active, a:link, a:hover {
+			text-decoration: underline;
+			color: #545454;
+			background-color: transparent;
+			font-size: 93%;
+		}
+
+		a:hover {
+			background-color: #cccccc;
+		}
+
+
+		hr {
+			clear: both;
+			height: 1px;
+			color: #242424;
+			background-color: transparent;
+		}
+
+		h1, h2, h3 {
+			color: #242424;
+			clear: left;
+			font: 100% Tahoma, Helvetica, Arial, sans-serif;
+			margin-bottom: 0.5em;
+			padding-top: 0.5em;
+			border-radius: 10px;
+			padding: 5px;
+		}
+
+		top {
+			width: 100%;
+		}
+
+
+		#i {
+			color: #ff1010;
+		}
+		tt{
+			font-family: "Arial";
+			font-size: 90%;
+			color: #006600;
+		}
+		em{
+			font-family: "Arial";
+			font-size: 80%;
+			font-weight: bold;
+			border-style:solid;
+			border-color: #abe876;
+			color: #1632cc;
+		}
+		bc{
+			font-family: "Arial";
+			font-size: 90%;
+			font-weight: bold;
+			color: #990000;
+			background-color: #fcf8c7;
+		}
+		ks{
+			font-family: "Arial";
+			font-weight: bold;
+			color: #0000CD	;
+			font-size: 90%;
+		}
+		kc{
+			font-family: "Arial";
+			font-weight: bold;
+			color: #008000	;
+			font-size: 90%;
+		}
+		pre{
+			font-family: "Consolas";
+			font-size: 85%;
+			background-color: #f5f5f5;
+			border: 1.5px solid silver;
+			padding: 5px;
+		}
+		m{
+			font-family: "Helvetica";
+			line-height: 100%;
+			font-size: 75%;
+		}
+		div.body{
+
+			font-size: 18px;
+		}
+		k{
+			color: #990000;
+			font-weight: bold;
+			font-size: 90%;
+		}
+		h1 {
+			font-size: 150%;
+			background-color: #b2c0ff;
+			padding: 10px;
+		}
+
+		h2 {
+			background-color: #9ed8ff;
+			font-size: 130%;
+		}
+
+		h3 {
+			background-color: #e6ccff;
+			font-size: 100%;
+		}
+		h4 {
+			background-color: #ccffcc;
+			font-size: 100%;
+			width: 95%;
+			border-radius: 5px;
+			padding: 2px;
+		}
+		h5 {
+			background-color: #d5ffb0;
+			font-size: 100%;
+
+		}
+		div.req{
+			background-color: #d9ffb3;
+			font-size: 18px;
+			width: 700px;
+			border: 3px solid green;
+			padding: 15px;
+			margin: 10px;
+		}
+		div.remark{
+			background-color: #E3F2FD;
+			border: 1.5px solid #d5f2ed;
+			padding: 15px;
+			margin: 10px;
+			border-radius: 25px;
+		}
+		table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+
+		ol, ul, li {
+			margin: 0;
+			margin-left: 10px;
+			padding: 0;
+			padding-bottom: 5px;
+		}
+
+		table, th, td {
+			border: 1px solid black;
+		}
+
+		img {
+			border: 1.5px solid #d5f2ed
+
+		}
+
+		a, a:visited, a:active, a:link, a:hover {
+			text-decoration: underline;
+			color: #545454;
+			background-color: transparent;
+		}
+
+		div.wrapdesc{
+			width: 90%;
+			margin: auto;
+		}
+
+		div.imagedesc{
+			width: 85%;
+			margin: auto;
+		}
+	</style>
+</head>
+
+<body>
+
+<div class="body">
+
+	<h2>Sprint Backlog</h2>
+	<div class="remark">
+		For this fourth sprint, we will cover the following requirements:
+		<ul>
+			<li>Implement all mock sensors to real sensors</li>
+			<li>Make a user interface to change mock sensor values (to show better to the customer how it works)</li>
+			<li>Creation of a log to track action done in the system and exchanged messages (<k>F19</k>)</li>
+			<li>Automatic mechanism of log analysis (<k>F20</k>)</li>
+			<li>Deploy mechanism</li>
+		</ul>
+	</div>
+
+
+	<h2>Sprint</h2>
+	<div class="remark">
+		<h3>Implement all mock sensors</h3>
+		Each sensor will remain a QActor, but this time it will be in a different context. In this way it could be
+		placed in a remote location and continue to act as the mock sensor.
+		Each sensor actor will mantain his structure and, upon request, will execute a shell command that find the
+		temperature and prints it to stdin. At this point the QActor reads it and reply to the getValue request.
+		<h3>User interface to update mock sensor values</h3>
+		In order to allow a demonstration of the system, it was developed a small application that allow a user to
+		change the values of the mock sensors to make it possible to the developers to show how the values of
+		the sensors changes the behaviour of the system.
+		<h3>Creation of a log</h3>
+		For logging, all the incoming requests to the web server are logged. Since for deployment we will use docker,
+		the docker's log mechanism will be used.<br>
+		In this case, it is only necessary to output the information in ClientController and ManagerController to have
+		them saved by docker.<br>
+		To see the logs for a specific container, it is necessary to run
+		<pre>docker logs _containerName_</pre>
+		A detailed guide about how <k>docker logs</k> works and all its advanced option, is available
+		<a href="https://docs.docker.com/engine/reference/commandline/logs/">here</a>.
+		<br>
+		All log lines will be in the format
+		<pre>DATETIME INFO [unitName] IP : endpoint : params</pre><br>
+		This way it will be possible to indentify timestamps of action and eventually investigate bugs of the system
+		or criminal attacks.
+		<h3>Log analisys</h3>
+		All log analisys will be done by an external framework that will be chosen by the customer in a future time.
+		<h3>Deploy mechanism</h3>
+		In order to have the two docker images updated without user intervention, all the push to master on GitHub
+		will fire an action that pushes the new image to docker.io repository.<br>
+		This configuration is saved in the <a href="../../.github/workflows/docker.yaml">.github/workflows/docker.yaml</a> file.
+		NEED TO REMOVE TestUtils.setXXX() in all clients!!!
+
+	</div>
+
+	<h2>Testing</h2>
+	<div class="remark">
+		At this point, all tests were made in previous sprints. It remains important to execute tests in order to check
+	</div>
+
+	<h2>Execution</h2>
+	<div class="remark">
+		In order to execute the application, is now necessary, to start both the qak and web server.
+		To start the qak server, it is necessary to go to the sprint3/core folder and run
+		<pre>./execute.bat run</pre>
+		or, on Linux
+		<pre>./execute.sh run</pre>
+		And for the web server, to go to the sprint3/web folder and run
+		<pre>gradle bootRun</pre>
+		Since we are now talking with a real robot, it is even necessary to start the basicrobot actor, going into
+		the sprint3 folder and executing
+		<pre>docker-compose -f basicrobotVirtual.yaml up</pre>
+	</div>
+
+	<h2>Sprint Review</h2>
+	<div class="remark">
+		<!-- present current work, introduce future developments -->
+	</div>
+	<div class="remark" style="background-color: white; text-align: center">
+		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
+	</div>
+
+</div>
+
+<div style="background-color:rgba(86, 56, 253, 0.9); width:60%;text-align:left;color:white">
+	By Alessandro Musarella <a style="color: white" href="mailto:alessandro.musarella@studio.unibo.it">alessandro.musarella@studio.unibo.it</a><br>
+	By Giulio Tripi <a style="color: white" href="mailto:giulio.tripi@studio.unibo.it">giulio.tripi@studio.unibo.it</a><br>
+	GitHub: <a style="color: white" href="https://github.com/giuliotripi/ParkManagerService">https://github.com/giuliotripi/ParkManagerService</a>
+</div>
+</body>
+</html>
