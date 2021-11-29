@@ -885,23 +885,71 @@
 
 			<li><a href="../../sprint3/userDocs/Sprint3.html">Sprint 3</a>, implementation of trolley actions</li>
 
-			<!-- <li><a href="../../sprint4/userDocs/Sprint4.html">Sprint 4</a>, implementation of mocked sensors, logging</li>-->
+			 <li><a href="../../sprint4/userDocs/Sprint4.html">Sprint 4</a>, implementation of mocked sensors, logging</li>
 		</ul>
 	</div>
 
 	<h2>Testing</h2>
 	<div class="remark">
-
+		In order to test the application, multiple test classes were written. Once written in a specific sprint, they
+		were executed in following sprints in order to check that the functionalities were still working.
+		<ol>
+			<li>
+				<k>TestDB</k>, tests the saving and retrieval of the informations to and from the database, working from sprint1.
+				<ul>
+					<li><a href="../../sprint1/test/eu/musarellatripi/test/TestDB.kt">Sprint 1</a></li>
+					<li><a href="../../sprint2/core/test/eu/musarellatripi/test/TestDB.kt">Sprint 2</a></li>
+					<li><a href="../../sprint3/core/test/eu/musarellatripi/test/TestDB.kt">Sprint 3</a></li>
+					<li><a href="../../sprint4/core/test/eu/musarellatripi/test/TestDB.kt">Sprint 4</a></li>
+				</ul>
+			</li>
+			<li>
+				<k>TestPlan0</k>, tests the client logic, planned in sprint0, working from sprint1.
+				<ul>
+					<li><a href="../../sprint1/test/eu/musarellatripi/test/TestPlan0.kt">Sprint 1</a></li>
+					<li><a href="../../sprint2/core/test/eu/musarellatripi/test/TestPlan0.kt">Sprint 2</a></li>
+					<li><a href="../../sprint3/core/test/eu/musarellatripi/test/TestPlan0.kt">Sprint 3</a></li>
+					<li><a href="../../sprint4/core/test/eu/musarellatripi/test/TestPlan0.kt">Sprint 4</a></li>
+				</ul>
+			</li>
+			<li>
+				<k>TestPlan2</k>, tests the manager logic, working from sprint2.
+				<ul>
+					<li><a href="../../sprint2/core/test/eu/musarellatripi/test/TestPlan2.kt">Sprint 2</a></li>
+					<li><a href="../../sprint3/core/test/eu/musarellatripi/test/TestPlan2.kt">Sprint 3</a></li>
+					<li><a href="../../sprint4/core/test/eu/musarellatripi/test/TestPlan2.kt">Sprint 4</a></li>
+				</ul>
+			</li>
+			<li>
+				<k>WebappApplicationTests</k>, tests the API functionalities, working from sprint2.
+				<ul>
+					<li><a href="../../sprint2/web/src/test/kotlin/eu/musarellatripi/webapp/WebappApplicationTests.kt">Sprint 2</a></li>
+					<li><a href="../../sprint3/web/src/test/kotlin/eu/musarellatripi/webapp/WebappApplicationTests.kt">Sprint 3</a></li>
+					<li><a href="../../sprint4/web/src/test/kotlin/eu/musarellatripi/webapp/WebappApplicationTests.kt">Sprint 4</a></li>
+				</ul>
+			</li>
+		</ol>
 	</div>
 
-	<h2>Deployment</h2>
+	<h2 id="deployment">Deployment</h2>
 	<div class="remark">
-
+		For deployment, as explained during sprint4, we used docker. In order to start the application, it is first necessary
+		to go to the root folder and start the trolley and the basicrobot, with one of the following commands:
+		<pre>docker-compose -f basicrobotVirtual.yaml up</pre>
+		for the trolley in the virtual environment or
+		<pre>docker-compose -f basicrobotMbot.yaml up</pre>
+		for a real Mbot trolley.<br>
+		After that, to start the application it is only necessary to run the following command:
+		<pre>docker-compose -f ParkManagerService.yaml up</pre>
+		<br>
+		The web server listen for requests on port <a href="http://localhost:8081">8081</a>.
 	</div>
 
 	<h2>Maintenance</h2>
 	<div class="remark">
-
+		As for our organization for updates, exposed in a <a href="">section of sprint4</a>, in order to update the project
+		in docker it is necessary to push the changes to the master branch in github. The folders with the final code that
+		have to be edited are <k>web</k>, <k>core</k> and <k>sensors</k>, located in the main folder.
 	</div>
 	<!-- USEFUL
 	<table style="width:100%" border="1">

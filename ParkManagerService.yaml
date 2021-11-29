@@ -1,13 +1,13 @@
 version: '1'
 services:
   logic:
-    image: docker.io/giuliotripi/parkmanagerservice:1.0
+    image: docker.io/giuliotripi/parkmanagerservice:github-1.0
     ## image: virtualrobotdisi:2.0
     ports:
       - 8050:8050
     network_mode: host
   webapp:
-    image: docker.io/giuliotripi/parkmanagerservice-webapp:1.0
+    image: docker.io/giuliotripi/parkmanagerservice-webapp:github-1.0
     ##image: basicrobot21virtual:1.0
     ports:
       - 8081:8081/tcp
