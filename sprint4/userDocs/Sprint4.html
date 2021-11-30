@@ -187,6 +187,11 @@
 			width: 85%;
 			margin: auto;
 		}
+		pre.inline {
+			display: inline-block;
+			margin-top: 5px;
+			margin-bottom: 5px;
+		}
 	</style>
 </head>
 
@@ -214,6 +219,7 @@
 	<h2>Sprint</h2>
 	<div class="remark">
 		<h3>Sensors implementation</h3>
+
 		Having used the QActors, we won't need to change the structure in the qak model. However, in order to place each
 		sensor in a different location, we will need to place each QActor in a different context.
 		When a sensor actor receives a request, it executes a shell command that will print the value to stdout. This value
@@ -228,11 +234,11 @@
 		and 1 otherwise. The image below represents the connections of the sensors to the Raspberry Pis. The weight
 		sensor needs to be connected to a pin which has a pull down resistance enabled.
 		<br>
-		<img src="img/sensors.png" alt="Sensors schema"><br>
+		<img src="img/sensors.png" alt="Sensors schema" style="max-width: 100%"><br>
 		Instead, the fan is a generic device that is connected to a relay and is powered on and off by the Raspberry Pi.
 		This way, there are no requirements on the cooling system, except that it can be switched on and off without
 		problems. The image below represents the connections of the fan to the Raspberry Pi.<br>
-		<img src="img/fan.png" alt="Fan schema"><br>
+		<img src="img/fan.png" alt="Fan schema" style="max-width: 100%"><br>
 
 		To make an easy-to-deploy and maintainable configuration for the raspberry pi, we created an
 		<a href="../devices/raspberry.yml">ansible</a> configuration file that contains all the information to configure
@@ -241,26 +247,31 @@
 		done.<br>
 		The command to run the script is
 		<pre>ansible-playbook raspberry.yml</pre>
-		and the complete documentation of ansible could be found <a href="https://docs.ansible.com/ansible/latest/index.html">here</a>
+		and the complete documentation of ansible could be found <a href="https://docs.ansible.com/ansible/latest/index.html">here</a>.
 
 		<h3>User interface to update mock sensor values</h3>
 		In order to allow a demonstration of the system, it was developed a small application that allows to change the
 		values of the mock sensors, in order to make it possible for the developers to show how the values of the
 		sensors changes the behaviour of the system.<br>
-		<pre>./execute.sh mockClient</pre>
+		It is possible to execute it going to sprint4/core folder and executing
+		<pre class="inline">./execute.sh mockClient</pre>
+		on Linux and
+		<pre class="inline">./execute.bat mockClient</pre>
+		on Windows.
 
 		<h3>Log creation</h3>
-		The information that we will log are the incoming requests to the web server. Since we already use docker for the
+		The information that we will log are the incoming requests to the web server. Since we already decided to use docker for the
 		deployment, we will utilize its log mechanism.<br>
 		Docker will automatically save to log every time something is printed to stdout, so we just have to output the
 		information in ClientController and ManagerController.<br>
 		To see the logs for a specific container, it is necessary to run
-		<pre>docker logs _containerName_</pre>.<br>
+		<pre>docker logs _containerName_</pre>
 		A detailed guide about how <k>docker logs</k> works and all its advanced option, is available
 		<a href="https://docs.docker.com/engine/reference/commandline/logs/">here</a>.
-		<br>
 		All log lines will be in the format
-		<pre>DATETIME INFO [unitName] IP : endpoint : params</pre><br>
+		<pre>DATETIME  INFO PROCID --- [THREAD] CLASS     : IP endpoint params</pre>
+		so, for example
+		<pre>2021-11-30 14:52:49.836  INFO 64034 --- [nio-8081-exec-2] e.m.webapp.ClientController              : 192.168.1.128 POST /api/carEnter slotnum=4</pre>
 		This way it will be possible to identify timestamps of action and eventually investigate bugs of the system
 		or criminal attacks.
 
@@ -269,20 +280,21 @@
 
 		<h3>Deploy mechanism</h3>
 
-
 		The two applications, the core part and the web part, will be put inside two separate docker containers, to make
 		the distribution and deployment fast and easy, without the need of additional installation or configuration.<br>
 
+		The Dockerfile of the two parts are saved in their folders. The core Dockerfile
+		<a href="../core/Dockerfile">here</a> and the web Dockerfile <a href="../web/Dockerfile">here</a>.<br>
+
 		In order to have the two docker images updated without user intervention, every time that there is an update on
 		the master branch on GitHub, the new image is pushed automatically to the docker.io repository.<br>
-		This is made possible by the <a href="../../.github/workflows/docker.yaml">.github/workflows/docker.yaml</a> file.
+		This is made possible by the <a href="../../.github/workflows/docker.yaml">.github/workflows/docker.yaml</a> file.<br>
 
-		TODO:
-		- SENSORS
-			- code for reading from sensor and output
-			- code for reading stdout from qak ?
-		- LOGS in web
-		- ANSIBLE configuration for raspi
+		Finally, to start the application with a single command, it was created a <a href="../../ParkManagerService.yaml">Docker file</a>
+		with reference to the two  images, that is saved in the root folder.<br><br>
+
+		To execute it, is necessary to run the following command:
+		<pre>docker-compose -f ParkManagerService.yaml up</pre>
 	</div>
 
 	<h2>Testing</h2>
@@ -298,6 +310,8 @@
 		<pre>./execute.bat run</pre>
 		or, on Linux
 		<pre>./execute.sh run</pre>
+		For the sensors, it is necessary to go to the sprint4/sensors folder and run
+		<pre>gradle -b build_ctxsensor.gradle run</pre>
 		And for the web server, to go to the sprint4/web folder and run
 		<pre>gradle bootRun</pre>
 		Since we are now talking with a real robot, it is even necessary to start the basicrobot actor, going into
