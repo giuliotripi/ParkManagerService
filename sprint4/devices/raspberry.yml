@@ -1,4 +1,4 @@
-- hosts: raspberry
+- hosts: parkingsensor
   become: yes
   tasks:
     - name: Install required libraries
@@ -7,6 +7,8 @@
           - python3-pip
           - openjdk-8-jdk
           - openjdk-8-jre
+          - wiringpi
+        update_cache: yes
 
     - name: Install pip3 libraries
       pip:
@@ -44,8 +46,14 @@
             creates: /opt/gradle/gradle-7.2
       when: not p.stat.exists
 
+    - name: Add gradle to path
+      lineinfile:
+        dest: /home/pi/.bashrc
+        regexp: '^export PATH="/opt/gradle/gradle-7.2/bin:$PATH"$'
+        line: 'export PATH="/opt/gradle/gradle-7.2/bin:$PATH"'
+
     - name: Add w1-gpio to boot config
-      lineinfile: cat  | grep -v "" > "$tmp"
+      lineinfile:
         dest: /boot/config.txt
         regexp: '^dtoverlay=w1-gpio$'
         line: 'dtoverlay=w1-gpio'
