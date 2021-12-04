@@ -267,7 +267,7 @@
 			<li><ks>thermometer</ks>: Sensor used to measure the temperature inside the parking-area;</li>
 			<li><ks>fan</ks>: A fan used to reduce the temperature inside the parking-area. It can be manually activated
 				by the parking manager, or it can activate automatically. It can be either on or off;</li>
-			<li><ks>map</ks>: schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
+			<li><ks>map</ks>: Schematic representation of the parking-area, made by a grid of squares of side length RD;</li>
 			<li><ks>fixed obstacles</ks>: Immovable objects that the robot cannot traverse;</li>
 			<li><ks>enterRequest</ks>: The request made by the client to the ParkManagerService to book a parking-slot;</li>
 			<li><ks>carEnter</ks>: The request made by the client to the ParkManagerService after enterRequest when he parks
@@ -280,9 +280,9 @@
 			<li><ks>ParkServiceGUI</ks>: GUI for parking clients to leave and pick up cars. It can be accessed by the client
 				by using their own personal device;</li>
 			<li><ks>ParkServiceStatusGUI</ks>: GUI for the parking-manager to manage some aspects of the parking area;</li>
-			<li><ks>SLOTNUM</ks>: id of the parking slot given to the client, representing the location where the car will
+			<li><ks>SLOTNUM</ks>: Id of the parking slot given to the client, representing the location where the car will
 				be placed by transport trolley. If equal to 0, no parking slots are available</li>
-			<li><ks>TOKENID</ks>: sequence of characters. The characters should be generated in a manner that:
+			<li><ks>TOKENID</ks>: Sequence of characters. The characters should be generated in a manner that:
 				<ul>
 					<li>Two cars cannot have the same TOKENID while they are in the parking area</li>
 					<li>It is impossible to guess the generated ID (cryptographically secure random)</li>
@@ -304,10 +304,9 @@
 			<li><ks>pick up the car</ks>: the client uses the ParkServiceGUI to request the pick up, by sending the TOKENID
 				previously received. After the car is moved to the OUTDOOR-area by the robot, the client takes the car and
 				frees the area within DTFREE interval of time;</li>
-			<li><ks>start the fan</ks>: when the current temperature inside the parking-area exceeds TMAX, either the
-				parking-manager starts manually the fan from the ParkServiceStatusGUI, or the fan starts automatically;</li>
-			<li><ks>stop the fan</ks>: when the current temperature goes below TMAX, either the parking-manager stops
-				manually the fan from the ParkServiceStatusGUI, or the fan stops automatically;</li>
+			<li><ks>start the fan</ks>: when the current temperature inside the parking-area exceeds TMAX, the system
+				starts the fan automatically;</li>
+			<li><ks>stop the fan</ks>: when the current temperature goes below TMAX, the system stops the fan automatically;</li>
 			<li><ks>stop the robot</ks>: when the current temperature inside the parking-area exceeds TMAX, the
 				parking-manager stops the robot, blocking any successive move until he starts the robot again;</li>
 			<li><ks>start the robot</ks>: after the parking-manager stops the robot, it remains stopped until restarted
@@ -329,14 +328,15 @@
 			<li>When parking manager stops the transport trolley, the transport trolley won't accept further commands
 				but finishes the move it was doing (e.g. if it is going to the INDOOR area, it reaches the INDOOR and
 				then stops accepting other requests);</li>
-			<li>When parking manager starts the transport trolley, it should continue the move it was doing before stop;</li>
-			<li>Temperature is in Celsius and mass in kilograms;</li>
+			<li>When the parking manager starts the transport trolley, it should continue the move it was doing before it
+				was stopped;</li>
+			<li>Temperature is in Celsius;</li>
 			<li>TMAX and DTFREE will be placed in a configuration file accessible by the application;</li>
 		</ul>
 
 		<h4>Map of the parking-area</h4>
 		The customer provides a
-		<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.kotlinSupports/app/src/main/kotlin/mapRoomKotlin/mapUtil.kt">library</a>
+		<a href="https://github.com/anatali/issLab2021/blob/main/it.unibo.kotlinSupports/app/src/main/kotlin/mapRoomKotlin">library</a>
 		in Kotlin to represent the map of the parking-area.<br>
 		Below there is a representation of the parking area, the <k>X</k> represent the obstacles which the robot cannot
 		cross.
@@ -362,7 +362,6 @@
 			<li>Afterwards, Client3 wants to enter his auto in the parking-area but receive a notice message from the
 				application stating that another client is in the parking phase or car pickup phase and that his
 				request is in queue. The request will be served when the previous ends.</li>
-			<li>Client4 </li>
 			<li>Client2 and Client3 remain waiting.</li>
 			<li>Client1 finish his parking phase.</li>
 			<li>Without further interaction by Client2, ParkManagerService fulfills his request.</li>
@@ -858,7 +857,7 @@
 			<li>API endpoints for 2 GUI: 8h</li>
 			<li>ParkServiceGUI (total 10h)
 				<ol>
-					<li>Design (including chose of theme): 3h</li>
+					<li>Design (including choice of theme): 3h</li>
 					<li>Realization (only client side): 7h</li>
 				</ol>
 			</li>
