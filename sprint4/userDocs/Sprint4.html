@@ -250,6 +250,7 @@
 		and the complete documentation of ansible could be found <a href="https://docs.ansible.com/ansible/latest/index.html">here</a>.
 
 		<h3>User interface to update mock sensor values</h3>
+
 		In order to allow a demonstration of the system, it was developed a small application that allows to change the
 		values of the mock sensors, in order to make it possible for the developers to show how the values of the
 		sensors changes the behaviour of the system.<br>
@@ -260,6 +261,7 @@
 		on Windows.
 
 		<h3>Log creation</h3>
+
 		The information that we will log are the incoming requests to the web server. Since we already decided to use docker for the
 		deployment, we will utilize its log mechanism.<br>
 		Docker will automatically save to log every time something is printed to stdout, so we just have to output the
@@ -276,9 +278,10 @@
 		or criminal attacks.
 
 		<h3>Log analysis</h3>
+
 		All log analysis will be done by an external framework that will be chosen by the customer in a future time.
 
-		<h3>Deploy mechanism</h3>
+		<h3 id="deploy">Deploy mechanism</h3>
 
 		The two applications, the core part and the web part, will be put inside two separate docker containers, to make
 		the distribution and deployment fast and easy, without the need of additional installation or configuration.<br>

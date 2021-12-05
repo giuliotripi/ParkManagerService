@@ -6,6 +6,6 @@ try:
 	temp = sensor.get_temperature()
 	print(temp)
 except w1thermsensor.errors.SensorNotReadyError:
-	print(0.0)
+	print(21.2121)
 except w1thermsensor.errors.ResetValueError:
-	print(0.5)
+	print(21.2122)
