@@ -220,7 +220,11 @@
 	<h2>Sprint</h2>
 	<div class="remark">
 		<h3>Sensors implementation</h3>
-		<!-- TODO -->
+
+		In the first document we mentioned that the customer already provided us with the code for sonar, written in C.
+		However, since we already had to write the code for the other sensors, and we decided to use Python, it was faster
+		to simply rewrite that code, being only a few lines of code.
+		<br>
 		Having used the QActors, we won't need to change the structure in the qak model. However, in order to place each
 		sensor in a different location, we will need to place each QActor in a different context.
 		When a sensor actor receives a request, it executes a shell command that will print the value to stdout. This value

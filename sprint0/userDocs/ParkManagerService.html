@@ -643,10 +643,9 @@
 				could be set using  a configuration file.
 			</li>
 		</ul>
-		<!--TODO -->
-		Since the behaviour of the three sensors is very similar, the software deployed on all the devices will have the
-		same structure, in order to make it possible to communicate between the sensor and the Service . The actual reading from the
-		sensor will be done by a specific program called by the sensors actor.<br>
+		Since the behaviour of the three sensors is conceptually the same (they read a value, and the have to communicate
+		it to the parkingService), the actors that encapsulate them will have almost the same structure, the only thing
+		changing will be the program called for the reading.<br>
 
 		<img style="max-width: 100%" src="img/sensor-interaction.png" alt="Sensor interaction">
 		<br>

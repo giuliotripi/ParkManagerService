@@ -214,6 +214,7 @@
 			<li>ParkManagerService should start the fan when TA > TMAX and stop it when TA <= TMAX (<k>F15</k>)</li>
 			<li>ParkManagerService should notify the parking manager when the OUTDOOR is not cleaned within DTFREE
 				interval of time (<k>F16</k>)</li>
+			<li>Data stored and exchanged must be protected (<k>NF3</k>)</li>
 		</ul>
 
 	</div>
@@ -335,6 +336,20 @@
 		A documentation of the API endpoints created is available <a href="openapi.yaml">here</a> in yaml format
 		and <a href="openapi.html">here</a> as an interactive webPage.
 	</div>
+
+
+	<h2>Secure connection</h2>
+	A non-functional requirement was that data must be exchanged in a secure matter. To grant it, we can use HTTPS, a
+	protocol for secure communication over a computer network. In order to do so, we need to:
+	<ul>
+		<li>get an SSL certificate</li>
+		<li>enable HTTPS in Spring Boot</li>
+		<li>redirect HTTP request to HTTPS</li>
+		<li>distribute the SSL certificate to clients</li>
+	</ul>
+	Since we are still in a development phase, we are not going to get a signed SSL certificate, and we would have to use
+	a self-generated SSL certificate. This implies that we would have to distribute manually the certificate to each client.
+	Thereby, we have decided to not activate it until we have to deploy in a production environment.
 
 	<h2>Testing</h2>
 	<div class="remark">
