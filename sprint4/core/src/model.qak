@@ -1,0 +1,966 @@
+/*
+ *  ParkManagerService
+ *  Copyright (C) 2021 Giulio Tripi <giulio.tripi@studio.unibo.it>, Alessandro Musarella <alessandro.musarella@studio.unibo.it>
+
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/* --------------- SPRINT4 MODEL --------------- */
+
+System /*-trace*/ -msglog  parkingsystem
+
+
+// SENSORS & FAN
+
+Request  getValue	: getValue(_)
+Reply    sensorValue: sensorValue(VALUE, SENSORNAME)
+
+Event aboveTMAX : aboveTMAX(_)
+Event underTMAX : underTMAX(_)
+
+Event carArrivedIndoor  : carArrivedIndoor(_)
+Event carLeftIndoor     : carLeftIndoor(_)
+Event carArrivedOutdoor : carArrivedOutdoor(_)
+Event carLeftOutdoor    : carLeftOutdoor(_)
+
+Dispatch startFan		: startFan(_)
+Dispatch stopFan		: stopFan(_)
+
+// FOR TESTING SENSORS
+Dispatch setValue	: sensorValue(VALUE, SENSORNAME)
+
+//TIMER
+
+Dispatch startTimer		: startTimer(_)
+Dispatch stopTimer		: stopTimer(_)
+Event	 timeout		: timeout(_)
+
+//TRANSPORT TROLLEY
+
+//Request so this way I know when trolley finished task (I could have used two dispatch instead, but this way
+//sounds more linear in a model)
+Request  moveToIn		: moveToIn(_)
+Request  moveToSlotIn	: moveToSlotIn(SLOTNUM)
+Request  moveToHome		: moveToHome(_)
+Request  moveToSlotOut	: moveToSlotOut(SLOTNUM)
+Request  moveToOut		: moveToOut(_)
+Reply    moveDone		: moveDone(MOVE, RESULT)
+Reply    moveError		: moveError(MOVE, CODE)
+
+Dispatch stopTrolley    : stopTrolley(_)
+Dispatch resumeTrolley  : resumeTrolley(_)
+
+// GUI CLIENT
+
+Request  enterRequest	: enterRequest(_)
+Reply    slotNum		: slotNum(SLOTNUM)
+
+Request  carEnter		: carEnter(SLOTNUM)
+Reply    token			: token(TOKENID)
+
+
+Request  pickUpRequest	: pickUpRequest(TOKENID)
+Reply    pickUpReply	: pickUpReply(STATUS)
+
+Reply 	 error			: error(MEANING)
+
+// GUI MANAGER
+
+Request stopTrolley    : stopTrolley(_)		//already defined above
+Request resumeTrolley  : resumeTrolley(_)	//already defined above
+
+Reply   ok			   : ok(_)
+
+Request readStatus  : readStatus(_)
+Reply   parkStatus  : parkStatus(STATUS)
+
+Dispatch temperatureAlarm   : temperatureAlarm(_)
+
+Dispatch trolleyError		: trolleyError(_)
+
+
+// BASIC ROBOT COMMANDS
+
+Dispatch cmd       : cmd(MOVE)
+Request step       : step( TIME )
+Reply   stepdone   : stepdone(V)
+Reply   stepfail   : stepfail(DURATION, CAUSE)
+
+
+
+// CONTEXTS
+
+Context ctxservice ip [ host= "localhost" port= 8050 ]
+
+Context ctxsensor ip [ host= "sensor.local" port= 8054]  //192.168.1.217
+
+Context ctxbasicrobot ip [host="127.0.0.1" port=8020]
+
+ExternalQActor basicrobot context ctxbasicrobot
+
+ExternalQActor thermometer context ctxsensor
+ExternalQActor sonar context ctxsensor
+ExternalQActor fan context ctxsensor
+ExternalQActor weight context ctxsensor
+
+
+QActor parkingservice context ctxservice {
+	[#
+		var SLOTNUM: Int = 0
+		var TOKENID: String = ""
+		var Error: Boolean = false
+		var Trolley = org.eclipse.californium.core.CoapClient("coap://localhost:8050/ctxservice/trolley")
+
+	#]
+	State s0 initial {
+		println("Service init")
+		[#
+			eu.musarellatripi.domain.ParkingState() //inits parking state reading previous state
+		#]
+	}
+	Goto idle
+	State idle {
+		updateResource [# "idle" #]
+	}
+	Transition t0
+		whenRequest enterRequest -> handleEnterRequest1
+		whenRequest carEnter -> handleCarEnter1
+		whenRequest pickUpRequest -> handlePickUp1
+
+	// ---------------------------------
+	//			handleEnterRequest
+	// ---------------------------------
+
+	//ask for weight
+	State handleEnterRequest1 {
+		updateResource [# "handleEnterRequest1" #]
+		println("handleEnterRequest1")
+		request weight -m getValue : getValue(_)
+	}
+	Transition t1a
+		whenReply sensorValue -> handleEnterRequest2
+
+	//check weight, trolley status, find the number of the first free slot and return the number
+	State handleEnterRequest2 {
+		println("handleEnterRequest2")
+
+		onMsg(sensorValue : sensorValue(WEIGHT, weight)) {
+			[#
+				SLOTNUM = 0
+
+				val trolleyState = Trolley.get().getResponseText()
+				if(!trolleyState.equals("stopped")) {
+					if (payloadArg(0).toInt() < eu.musarellatripi.sensors.Values.weightThreshold) { //car must be absent
+						val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+						val slots = parkingState.getAll()
+					 	for(i in 1..6) {
+							if(slots.get(i)?.reserved == false) {
+								SLOTNUM=i;
+								break;
+							}
+						}
+						if(SLOTNUM>0)
+							parkingState.update(SLOTNUM, true, "")
+						#]
+						replyTo enterRequest with slotNum : slotNum($SLOTNUM)
+						println("[SERVICE] slotNum assigned: $SLOTNUM")
+						[#
+					} else {
+						#]
+						replyTo enterRequest with error : error(weighttoohigh)
+						[#
+					}
+				} else {
+					#]
+						replyTo enterRequest with error : error(trolleystopped)
+					[#
+				}
+			#]
+		}
+		updateResource [# "handleEnterRequest2" #]
+
+	}
+	Goto idle
+
+	// ---------------------------------
+	//			handleEnterRequest
+	// ---------------------------------
+
+	//ask for weight
+	State handleCarEnter1 {
+		onMsg(carEnter : carEnter(SLOTNUM)) {
+			[# SLOTNUM = payloadArg(0).toInt() #]
+			request weight -m getValue : getValue(_)
+		}
+	}
+	Transition t2a
+		whenReply sensorValue -> handleCarEnter2
+
+	//check weight, correctness of received SLOTNUM, trolley state -> mark slot occupied, generate and return token
+	State handleCarEnter2 {
+		println("In handleCarEnter")
+		onMsg(sensorValue : sensorValue(WEIGHT, weight)) {
+			[#
+			val weight = payloadArg(0).toInt()
+
+			val trolleyState = Trolley.get().getResponseText()
+
+			val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+			if(SLOTNUM >= 1 && SLOTNUM <= 6 && parkingState.get(SLOTNUM).reserved == true &&
+				parkingState.get(SLOTNUM).token.equals("")) {
+
+				if(weight >= eu.musarellatripi.sensors.Values.weightThreshold) { //car must be there
+					if(!trolleyState.equals("stopped")) {
+						val STRING_LENGTH = 10
+						val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+						val randomString = (1..STRING_LENGTH)
+						  .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+						  .map(charPool::get)
+						  .joinToString("");
+						TOKENID = "t" + SLOTNUM + randomString
+
+						Error = false
+						#]
+						println("[SERVICE] Generated TOKENID: $TOKENID")
+						updateResource [# "handleCarEnter" #]
+
+						[#
+					} else { //trolley is stopped
+						Error = true
+						#]
+						replyTo carEnter with error : error(trolleystopped)
+						[#
+					}
+				} else { //car is not there
+					Error = true
+					#]
+					replyTo carEnter with error : error(indoorempty)
+					[#
+				}
+			} else {
+				Error = true
+				#]
+				replyTo carEnter with error : error(valuesnotvalid)
+				[#
+			}
+			#]
+		}
+	}
+	Goto idle if [# Error #]
+		else handleCarEnter3
+
+	//if all checks were fine in previous state, send trolley command to move, waiting for
+	State handleCarEnter3 {
+		request trolley -m moveToIn : moveToIn(X)
+	}
+	Transition t2b
+		whenReply moveDone -> handleCarEnter4
+		whenReply moveError -> handleCarEnterMoveError
+
+	State handleCarEnterMoveError {
+		replyTo carEnter with error : error(trolleyerror)
+	}
+	Goto idle
+
+	State handleCarEnter4 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+			//if I arrived here, I've just taken customer car without errors, so I reply and record his TOKEN in DB
+			[#
+				val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+				parkingState.update(SLOTNUM, true, TOKENID)
+			#]
+			replyTo carEnter with token : token($TOKENID)
+			request trolley -m moveToSlotIn : moveToSlotIn($SLOTNUM)
+		}
+	}
+	Transition t2c
+		whenReply moveDone -> handleCarEnter5
+		whenReply moveError -> idle
+
+
+	State handleCarEnter5 {
+		onMsg(moveDone : moveDone(MOVE, STATUS)) {
+
+		}
+	}
+	//if there are not other requests trolley return to home, otherwise fulfill requests (only carEnter and pickUp)
+	Transition t2d
+		whenTime 200 -> handleCarEnter6
+		whenRequest carEnter -> handleCarEnter1
+		whenRequest pickUpRequest -> handlePickUp1
+	State handleCarEnter6 {
+		request trolley -m moveToHome : moveToHome(X)
+	}
+	Transition t2e
+		whenReply moveDone -> handleCarEnter7
+		whenReply moveError -> idle
+	State handleCarEnter7 {
+		println("[SERVICE] carEnterRequest finished")
+	}
+	Goto idle
+
+	// ---------------------------------
+	//			handlePickUp
+	// ---------------------------------
+
+	//ask for sonar value
+	State handlePickUp1 {
+		onMsg(pickUpRequest : pickUpRequest(TOKENID)) {
+			request sonar -m getValue : getValue(_)
+			[#
+				TOKENID = payloadArg(0)
+			#]
+		}
+	}
+	Transition t3a
+		whenReply sensorValue -> handlePickUp2
+
+	//check sonar value, trolley state, token -> find corresponding SLOTNUM
+	State handlePickUp2 {
+		onMsg(sensorValue : sensorValue(DISTANCE, distance)) {
+			[#
+				val sonarState = payloadArg(0).toDouble()
+
+				val trolleyState = Trolley.get().getResponseText()
+
+				SLOTNUM = -1
+				if(!trolleyState.equals("stopped")) {
+					if(sonarState > eu.musarellatripi.sensors.Values.sonarThreshold) { //if less there is already a car, so if more we can proceed
+
+						val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+						//val slotsCompatible = parkingState.getAll().filter {(key, value) -> value.token.equals(TOKENID)}
+						for(i in 1..6) {
+							if(parkingState.get(i).token.equals(TOKENID)) {
+								SLOTNUM = i;
+								println("$TOKENID corresponds to slot $SLOTNUM")
+								//parkingState.update(i, false, "") //done just after car in front of OUTDOOR
+								break;
+							}
+						}
+						if(SLOTNUM == -1) {
+							println("WRONGTOKEN")
+							#]
+							replyTo pickUpRequest with error : error(wrongtoken)
+							[#
+						}
+					} else {
+						println("OUTDOORBUSY")
+						#]
+						replyTo pickUpRequest with error : error(outdoorbusy)
+						[#
+					}
+				} else {
+					#]
+					replyTo pickUpRequest with error : error(trolleystopped)
+					[#
+				}
+			#]
+		}
+	}
+	Goto idle if [# SLOTNUM == -1 #]
+		else handlePickUp3
+
+	//command trolley to take car
+	State handlePickUp3 {
+		request trolley -m moveToSlotOut : moveToSlotOut($SLOTNUM)
+	}
+	Transition t3b
+		whenReply moveDone -> handlePickUp4
+		whenReply moveError -> idle
+	State handlePickUp4 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+				request trolley -m moveToOut : moveToOut(X)
+
+			}
+	}
+	Transition t3c
+		whenReply moveDone -> handlePickUp5
+		whenReply moveError -> handlePickUpMoveError
+
+	State handlePickUpMoveError {
+		replyTo pickUpRequest with error : error(trolleyerror)
+	}
+	Goto idle
+
+	State handlePickUp5 {
+		onMsg(moveDone: moveDone(MOVE, RESULT)) {
+			[#  //if I'm here, I just left the car in front of INDOOR without errors, so I notify the customer and cancel his TOKEN from DB
+				val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
+				parkingState.update(SLOTNUM, false, "")
+			#]
+			replyTo pickUpRequest with pickUpReply : pickUpReply(ok)
+
+			forward dtfree -m startTimer : startTimer(X)
+			println("[SERVICE] received moveDone(moveToOut)")
+		}
+	}
+	//if there are not other requests trolley return to home, otherwise fulfill requests (only carEnter and pickUp)
+	Transition t3d
+		whenTime 200 -> handlePickUp6
+		whenRequest carEnter -> handleCarEnter1
+		whenRequest pickUpRequest -> handlePickUp1
+	State handlePickUp6 {
+		println("[SERVICE] sending moveToHome")
+		request trolley -m moveToHome : moveToHome(X)
+	}
+	Transition t3e
+		whenReply moveDone -> handlePickUp7
+		whenReply moveError -> idle
+	State handlePickUp7 {
+		println("[SERVICE] pickUpRequest finished")
+	}
+	Goto idle
+}
+
+QActor sensorservice context ctxservice {
+	State s0 initial {
+
+	}
+	Transition t1
+		whenEvent underTMAX -> tempLow
+		whenEvent aboveTMAX -> tempHigh
+	State tempLow {
+		forward fan -m stopFan : stopFan(X)
+	}
+	Transition t2
+		whenEvent aboveTMAX -> tempHigh
+	State tempHigh {
+		forward fan -m startFan : startFan(X)
+	}
+	Transition t3
+		whenEvent underTMAX -> tempLow
+}
+
+QActor managerservice context ctxservice {
+	[#
+		val Gson = com.google.gson.Gson();
+		val Trolley = org.eclipse.californium.core.CoapClient("coap://localhost:8050/ctxservice/trolley");
+		val Fan = org.eclipse.californium.core.CoapClient("coap://sensor.local:8054/ctxsensor/fan")
+		val ParkingDevicesStatus = eu.musarellatripi.ParkingDevicesStatus();
+		ParkingDevicesStatus.sensors.put("temperature", eu.musarellatripi.SensorMeasure(0.0F, 0, "temperature"))
+	#]
+	State s0 initial {
+
+	}
+	Goto idle //waits for all actors to initialize before requesting their status
+	State idle {
+		updateResource [# Gson.toJson(ParkingDevicesStatus) #]
+	}
+	Transition t1
+		whenRequest stopTrolley -> handleStopTrolley1
+		whenRequest resumeTrolley -> handleResumeTrolley
+		whenReply sensorValue -> updateSensorReading
+		whenEvent timeout -> dtFreeTimeout
+		whenEvent carLeftOutdoor -> resetAlarmOutdoor
+		whenRequest readStatus -> update
+		whenMsg trolleyError -> handleTrolleyError
+
+	//I ask for temperature before performing operation
+	State handleStopTrolley1 {
+		request thermometer -m getValue : getValue(_)
+	}
+	Transition t1
+		whenReply sensorValue -> handleStopTrolley2
+
+	//if temperature is above TMAX I forward the command to the trolley actor
+	State handleStopTrolley2 {
+		onMsg(sensorValue : sensorValue(TEMPERATURE, temperature)) {
+			[#
+				val temperature = payloadArg(0).toDouble()
+				if(temperature >= eu.musarellatripi.sensors.Values.TMAX) {
+					#]
+						forward trolley -m stopTrolley : stopTrolley(_)
+						replyTo stopTrolley with ok : ok(_)
+					[#
+				} else {
+					println("[TROLLEY] temperature not above TMAX, won't stop")
+					#]
+						replyTo stopTrolley with error : error(temperatureundertmax)
+					[#
+				}
+			#]
+		}
+	}
+	Goto idle //Goto update if the state must be always up to date. In that case updateSensorReading should reply only if there was a readStatus request
+
+	State handleResumeTrolley {
+		forward trolley -m resumeTrolley : resumeTrolley(_)
+		replyTo resumeTrolley with ok : ok(_)
+		[#
+			ParkingDevicesStatus.trolleyError = false
+		#]
+	}
+	Goto idle
+	State updateSensorReading {
+		onMsg(sensorValue: sensorValue(VALUE, SENSORNAME)) {
+			[#
+				val value = payloadArg(0).toFloat()
+				val sensor = payloadArg(1)
+
+				ParkingDevicesStatus.sensors.get(sensor)?.measure = value
+				ParkingDevicesStatus.sensors.get(sensor)?.time = (System.currentTimeMillis()/1000).toInt()
+				val STATUS = Gson.toJson(ParkingDevicesStatus)
+
+			#]
+			replyTo readStatus with parkStatus : parkStatus($STATUS)
+		}
+	}
+	Goto idle
+	State update {
+		request thermometer -m getValue : getValue(_)
+		[#
+			val trolleyState = Trolley.get().getResponseText().toUpperCase()
+			val fanState = Fan.get().getResponseText().toUpperCase()
+
+			try {
+				ParkingDevicesStatus.trolleyState = eu.musarellatripi.TrolleyState.valueOf(trolleyState)
+				ParkingDevicesStatus.fanState = eu.musarellatripi.FanState.valueOf(fanState)
+			} catch(e: IllegalArgumentException) {
+				println("Actors still without value: ")
+				println("trolleyState: " + trolleyState)
+				println("fanState: " + fanState)
+			}
+		#]
+	}
+	Goto idle
+	State dtFreeTimeout {
+		[#
+			ParkingDevicesStatus.outdoorAlarm = true
+		#]
+		//Resource updated in idle state
+	}
+	Goto idle
+	State resetAlarmOutdoor {
+		[#
+			ParkingDevicesStatus.outdoorAlarm = false
+		#]
+		//Resource updated in idle state
+	}
+	Goto idle
+	State handleTrolleyError {
+		[#
+			ParkingDevicesStatus.trolleyError = true
+		#]
+		//Resource updated in idle state
+	}
+	Goto idle
+}
+
+// ----------------------------------
+//		ACTORS FOR MOCK GUIs
+// ----------------------------------
+/*
+QActor client context ctxservice {
+	State s0 initial {
+		println("clientGUI init")
+		delay 5000
+		//request trolley -m moveToIn : moveToIn(_)
+
+		//request service -m enterRequest : enterRequest(_)
+	}
+	//Transition t1
+		//whenReply slotNum -> printslotnum
+	State printslotnum {
+		println("[CLIENT] receiving")
+		onMsg(slotNum: slotNum(SLOTNUM)) {
+			println("[CLIENT] Received ${payloadArg(0)}")
+		}
+		println("[CLIENT] received")
+		request parkingservice -m carEnter : carEnter(_)
+	}
+	Transition t2
+		whenReply token -> printtoken
+	State printtoken {
+		onMsg(token: token(TOKENID)) {
+			println("[CLIENT] Received ${payloadArg(0)}")
+		}
+	}
+	Goto trip
+	State trip {
+		println("[CLIENT] Going out for a trip")
+		delay 15000
+		println("[CLIENT] Trying to pick up my car")
+		request parkingservice -m pickUpRequest : pickUpRequest(t0)
+	}
+	Transition t3
+		whenReply pickUpReply -> pickUp
+	State pickUp {
+
+		println("[CLIENT] CAR PICKED UP")
+	}
+}
+
+QActor manager context ctxservice {
+	State s0 initial {
+		println("managerGUI init")
+	}
+	Transition t0
+		whenEvent timeout -> timeout
+
+	State timeout {
+		println("TIMEOUT")
+	}
+}
+*/
+// ----------------------------------
+//		ACTORS FOR TROLLEY
+// ----------------------------------
+
+QActor trolley context ctxservice {
+	[#
+		val HOME : Pair<String,String> = Pair("0", "0")
+		val INDOOR : Pair<String,String> = Pair("6", "0")
+		val OUTDOOR : Pair<String,String> = Pair("6", "4")
+		val SLOTS : HashMap<Int, Pair<String,String>> = hashMapOf(
+			1 to Pair("1", "1"), 2 to Pair("4", "1"), 3 to Pair("1", "2"),
+			4 to Pair("4", "2"), 5 to Pair("1", "3"), 6 to Pair("4", "3"))
+			//I must not specify the coordinates of the parking slot but the front of the parking slot
+		var Moving = false
+		var trolleyCommand = ""
+		var MV = ""
+		var simulate = false
+	#]
+
+	State s0 initial {
+		run itunibo.planner.plannerUtil.loadRoomMap("parkingMap")
+		run itunibo.planner.plannerUtil.initAI()
+		run itunibo.planner.plannerUtil.showMap()
+		run itunibo.planner.plannerUtil.startTimer()
+		solve( consult("config.pl")	 )
+ 		solve( simulateTrolley(X) )
+		println( currentSolution )	//yes X / on oppure X / off
+		[# val x = getCurSol("X").toString()
+		   simulate = ( x == "on")
+		#]
+		println("[TROLLEY] simulate=$simulate")
+	}
+	Goto idle
+	State idle {
+		updateResource [# "idle" #]
+		println("[TROLLEY] idle")
+	}
+	Transition t0
+		whenMsg stopTrolley -> stopped
+		whenMsg resumeTrolley -> idle //to consume it
+		whenRequest moveToIn -> moveToIn
+		whenRequest moveToSlotIn -> moveToSlotIn
+		whenRequest moveToHome -> moveToHome
+		whenRequest moveToSlotOut -> moveToSlotOut
+		whenRequest moveToOut -> moveToOut
+	State moveToIn {
+		updateResource [# "working" #]
+		println("[TROLLEY] moveToIn1")
+		[#
+			itunibo.planner.plannerUtil.planForGoal(INDOOR.first, INDOOR.second)
+			trolleyCommand = "moveToIn"
+		#]
+	}
+	Goto moving
+
+	State moveToSlotIn {
+		updateResource [# "working" #]
+		println("[TROLLEY] moveToSlotIn2")
+		onMsg(moveToSlotIn: moveToSlotIn(SLOTNUM)) {
+			[#
+				val SLOTNUM = payloadArg(0).toInt()
+				itunibo.planner.plannerUtil.planForGoal(SLOTS.get(SLOTNUM)!!.first, SLOTS.get(SLOTNUM)!!.second)
+				trolleyCommand = "moveToSlotIn"
+			#]
+		}
+	}
+	Goto moving
+
+	State moveToHome {
+		updateResource [# "working" #]
+		println("[TROLLEY] moveToHome3-6")
+		[#
+			itunibo.planner.plannerUtil.planForGoal(HOME.first, HOME.second)
+			trolleyCommand = "moveToHome"
+		#]
+	}
+	Goto moving
+
+	State moveToSlotOut {
+		updateResource [# "working" #]
+		println("[TROLLEY] moveToSlotOut4")
+		onMsg(moveToSlotOut: moveToSlotOut(SLOTNUM)) {
+			[#
+				val SLOTNUM = payloadArg(0).toInt()
+				itunibo.planner.plannerUtil.planForGoal(SLOTS.get(SLOTNUM)!!.first, SLOTS.get(SLOTNUM)!!.second)
+				trolleyCommand = "moveToSlotOut"
+			#]
+		}
+	}
+	Goto moving
+
+	State moveToOut {
+		updateResource [# "working" #]
+		println("[TROLLEY] moveToOut5")
+		[#
+			itunibo.planner.plannerUtil.planForGoal(OUTDOOR.first, OUTDOOR.second)
+			trolleyCommand = "moveToOut"
+		#]
+	}
+	Goto moving
+
+	State moving {
+		[#
+			MV = itunibo.planner.plannerUtil.getNextPlannedMove()
+			// if it has executed all moves, goes back to idle
+			if(MV.equals("")){
+				itunibo.planner.plannerUtil.showMap()
+				println("[TROLLEY] $trolleyCommand terminated")
+				if(trolleyCommand != "moveToHome")
+					delay(1000) //simulation of load/unload time
+				answer(trolleyCommand, "moveDone", "moveDone($trolleyCommand,1)")
+				trolleyCommand = ""
+				Moving = false
+			}
+			else{
+				Moving = true
+			}
+		#]
+	}
+	Goto executeMove if [# Moving #] else idle
+	State executeMove {
+		[#
+			if(MV == "w" && !simulate) {
+				#]
+					request basicrobot -m step : step(330)
+				[#
+			} else if(!simulate) {
+				#]
+					forward basicrobot -m cmd : cmd($MV)
+				[#
+			}
+			itunibo.planner.plannerUtil.updateMap(MV)
+		#]
+		delay 500
+	}
+	Goto waitStepResponse if [# MV == "w" && !simulate #] else moving
+	State waitStepResponse {
+
+	}
+	Transition t5
+		whenReply stepdone -> moving
+		whenReply stepfail -> handleFailure
+
+
+	State stopped {
+		updateResource [# "stopped" #]
+		println("[TROLLEY] stopped")
+		discardMsg On
+	}
+	Transition t6
+		whenMsg stopTrolley -> stopped //to consume it
+		whenMsg resumeTrolley -> idle
+	State handleFailure {
+		println("[TROLLEY] FAILED MOVE")
+		//reset map to HOME
+		[#
+		itunibo.planner.plannerUtil.planForGoal(HOME.first, HOME.second)
+		MV = itunibo.planner.plannerUtil.getNextPlannedMove()
+		while(!MV.equals("")) {
+			itunibo.planner.plannerUtil.updateMap(MV)
+			MV = itunibo.planner.plannerUtil.getNextPlannedMove()
+		}
+		while(!itunibo.planner.plannerUtil.getDirection().equals("downDir"))
+			itunibo.planner.plannerUtil.updateMap("l")
+		itunibo.planner.plannerUtil.showMap()
+		#]
+		forward managerservice -m trolleyError : trolleyError(_)
+		updateResource [# "stopped" #] //so if parkingservice checks my status in next command, I'm already stopped and do not accept further commands
+		[#
+			answer(trolleyCommand, "moveError", "moveError($trolleyCommand,1)")
+		#]
+	}
+	Goto stopped
+}
+
+// ----------------------------------
+//		ACTORS FOR TIMEOUT
+// ----------------------------------
+
+QActor dtfree context ctxservice {
+	[#
+		val TIME=eu.musarellatripi.sensors.Values.DTFREE;
+		#
+	]
+	State idle initial {
+
+	}
+	Transition t0
+		whenMsg startTimer -> timing
+	State timing {
+
+	}
+	Transition t1 whenTimeVar TIME -> timeout
+		whenMsg stopTimer -> idle
+		whenEvent carLeftOutdoor -> idle
+	State timeout {
+		emit timeout : timeout(_)
+	}
+	Goto idle
+}
+
+// ----------------------------------
+//		ACTORS FOR SENSORS & FAN
+// ----------------------------------
+
+/*QActor thermometer context ctxservice {
+	[# var TEMP = 0; var OLDTEMP=0; #]
+	State s0 initial {
+  		 println("Thermometer init")
+	}
+	Goto idle
+	State idle {
+
+	}
+	Transition t0
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetValue
+
+	State handleRequest {
+		replyTo getValue with sensorValue : sensorValue($TEMP, temperature)
+   	}
+	Goto idle
+	State handleSetValue {
+		onMsg(setValue: sensorValue(TEMP, temperature)) {
+			[#
+				TEMP = payloadArg(0).toInt()
+				//if equal to threshold is under
+				if(TEMP > eu.musarellatripi.sensors.Values.TMAX &&
+					OLDTEMP <= eu.musarellatripi.sensors.Values.TMAX
+				) {
+					#]
+						emit aboveTMAX : aboveTMAX($TEMP)
+					[#
+				} else if(TEMP <= eu.musarellatripi.sensors.Values.TMAX &&
+					OLDTEMP > eu.musarellatripi.sensors.Values.TMAX
+				) {
+					#]
+						emit underTMAX : unserTMAX($TEMP)
+					[#
+				}
+				OLDTEMP = TEMP
+			#]
+		}
+	}
+	Goto idle
+}
+
+QActor sonar context ctxservice {
+	[# var DISTANCE = 0; var OLDDISTANCE = 0; #]
+	State s0 initial {
+  		 println("Sonar init")
+	}
+	Goto idle
+	State idle {
+
+	}
+	Transition t0
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetValue
+
+	State handleRequest {
+		replyTo getValue with sensorValue : sensorValue($DISTANCE, distance)
+   	}
+	Goto idle
+	State handleSetValue {
+		onMsg(setValue: sensorValue(DISTANCE, distance)) {
+			[#
+				DISTANCE = payloadArg(0).toInt()
+				//if equal to threshold is under
+				if(DISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold &&
+					OLDDISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold
+				) {
+					#]
+						emit carLeftOutdoor : carLeftOutdoor(_)
+					[#
+				} else if(DISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold &&
+					OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
+				) {
+					#]
+						emit carArrivedIndoor : carArrivedIndoor(_)
+					[#
+				}
+			#]
+		}
+	}
+	Goto idle
+}
+
+QActor fan context ctxservice {
+	[# var Stato = 0 #]  //State is a reserved keyword
+	State s0 initial {
+  		 println("Fan init")
+	}
+	Goto off
+  	State off {
+		println("Fan off")
+		updateResource [# "off" #]
+		[# Stato = 0 #]
+		discardMsg On
+	}
+	Transition t1 whenMsg startFan -> on
+	//se qui mi arriva un disable devo scartare il messaggio (o tornare a disabled, non accumularlo, altrimenti poi torna qui)
+	State on {
+		println("Fan on")
+		updateResource [# "on" #]
+		[# Stato = 1 #]
+		discardMsg On //sto scartando solo i messaggi != disableAlarm e non quelli getAlarmState che magari mi arrivano contemporaneamente?
+	}
+	Transition t2 whenMsg stopFan -> off
+}
+
+QActor weight context ctxservice {
+	[# var Numcheck = 0; var WEIGHT = 0 #]
+	State s0 initial {
+  		 println("Weight init")
+  		 //request weight -m getValue : getValue(_)
+  		 updateResource [# "init" #]
+	}
+	Goto idle
+	State idle {
+
+	}
+	Transition t0
+		whenTime 20000 -> check
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetWeight
+
+	State handleRequest {
+		//printCurrentMessage
+		replyTo getValue with sensorValue: sensorValue($WEIGHT, weight)
+		println("[WEIGHT] value is $WEIGHT")
+		updateResource [# "req" #]
+   	}
+	Goto idle
+	State check {
+		[# Numcheck++ #]
+		updateResource [# "check $Numcheck" #]
+
+	}
+	Goto idle
+	State handleSetWeight {
+		onMsg(setValue: sensorValue(WEIGHT, weight)) {
+			[# WEIGHT = payloadArg(0).toInt() #]
+			println("[WEIGHT] value is NOW $WEIGHT")
+			updateResource [# "new w is $WEIGHT" #]
+		}
+	}
+	Goto idle
+}*/
+
+

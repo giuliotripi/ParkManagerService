@@ -1,0 +1,279 @@
+System /*-trace*/ -msglog  parkingsystem
+
+Request  getValue	: getValue(_)
+Reply    sensorValue: sensorValue(VALUE, SENSORNAME)
+
+Event aboveTMAX : aboveTMAX(_)
+Event underTMAX : underTMAX(_)
+
+Event carArrivedIndoor  : carArrivedIndoor(_)
+Event carLeftIndoor     : carLeftIndoor(_)
+Event carArrivedOutdoor : carArrivedOutdoor(_)
+Event carLeftOutdoor    : carLeftOutdoor(_)
+
+Dispatch startFan		: startFan(_)
+Dispatch stopFan		: stopFan(_)
+
+// FOR TESTING SENSORS
+Dispatch setValue	: sensorValue(VALUE, SENSORNAME)
+
+Context ctxsensor ip [ host= "127.0.0.1" port= 8054]
+
+Context ctxservice ip [ host="192.168.1.130" port=8050]
+
+QActor thermometer context ctxsensor {
+	[# var TEMP = 0.0; var OLDTEMP=0.0; var simulate: Boolean = false; #]
+	State s0 initial {    
+  		 
+  		solve( consult("config.pl")	 )
+ 		solve( simulate(X) )
+		println( currentSolution )	//yes X / on oppure X / off
+		[# val x = getCurSol("X").toString() 
+		   simulate = ( x == "on")
+		#]
+		println("Thermometer init simulate=$simulate")
+	}
+	Goto check
+	State idle {
+		
+	}
+	Transition t0
+		whenTime 60000 -> check
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetValue
+  	
+	State handleRequest {
+		[#
+		   if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 thermometer.py")
+				val reader = java.io.BufferedReader(java.io.InputStreamReader(p.getInputStream()))
+				val line = reader.readLine()
+				if(line != null)
+					TEMP = line.toDouble()
+			}
+		#]
+		replyTo getValue with sensorValue : sensorValue($TEMP, temperature)
+   	}
+	Goto idle
+	State handleSetValue {
+		onMsg(setValue: sensorValue(TEMP, temperature)) {
+			[#
+				if(simulate) {
+					TEMP = payloadArg(0).toDouble()
+					//if equal to threshold is under
+					if(TEMP > eu.musarellatripi.sensors.Values.TMAX &&
+						OLDTEMP <= eu.musarellatripi.sensors.Values.TMAX
+					) {
+						#]
+							emit aboveTMAX : aboveTMAX($TEMP)
+						[#
+					} else if(TEMP <= eu.musarellatripi.sensors.Values.TMAX &&
+						OLDTEMP > eu.musarellatripi.sensors.Values.TMAX
+					) {
+						#]
+							emit underTMAX : unserTMAX($TEMP)
+						[#
+					}
+					OLDTEMP = TEMP
+				}
+			#]
+		}
+	}
+	Goto idle
+	State check {
+		[#
+			if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 thermometer.py")
+				val reader = java.io.BufferedReader(java.io.InputStreamReader(p.getInputStream()))
+				val line = reader.readLine()
+				if(line != null)
+					TEMP = line.toDouble()
+				if(TEMP > eu.musarellatripi.sensors.Values.TMAX &&
+					OLDTEMP <= eu.musarellatripi.sensors.Values.TMAX
+				) {
+					#]
+						emit aboveTMAX : aboveTMAX($TEMP)
+					[#
+				} else if(TEMP <= eu.musarellatripi.sensors.Values.TMAX &&
+					OLDTEMP > eu.musarellatripi.sensors.Values.TMAX
+				) {
+					#]
+						emit underTMAX : unserTMAX($TEMP)
+					[#
+				}
+				OLDTEMP = TEMP
+			}
+		#]
+	}
+	Goto idle
+}
+
+QActor sonar context ctxsensor {
+	[# var DISTANCE = 0.0; var OLDDISTANCE = 0.0; var simulate: Boolean = false; #]
+	State s0 initial {
+		solve( consult("config.pl")	 )
+ 		solve( simulate(X) )
+		println( currentSolution )	//yes X / on oppure X / off
+		[# val x = getCurSol("X").toString() 
+		   simulate = ( x == "on")
+		#]
+  		println("Sonar init simulate=$simulate")
+	}
+	Goto check
+	State idle {
+		
+	}
+	Transition t0
+		whenTime 1000 -> check
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetValue
+  	
+	State handleRequest {
+		[#
+		   if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 sonar.py")
+				val reader = java.io.BufferedReader(java.io.InputStreamReader(p.getInputStream()))
+				DISTANCE = reader.readLine().toDouble()
+			}
+		#]
+		replyTo getValue with sensorValue : sensorValue($DISTANCE, distance)
+   	}
+	Goto idle
+	State handleSetValue {
+		onMsg(setValue: sensorValue(DISTANCE, distance)) {
+			[#
+				if(simulate) {
+					DISTANCE = payloadArg(0).toDouble()
+					//if equal to threshold is under
+					if(DISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold &&
+						OLDDISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold
+					) {
+						#]
+							emit carLeftOutdoor : carLeftOutdoor(_)
+						[#
+					} else if(DISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold &&
+						OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
+					) {
+						#]
+							emit carArrivedIndoor : carArrivedIndoor(_)
+						[#
+					}
+					OLDDISTANCE = DISTANCE
+				}
+			#]
+		}
+	}
+	Goto idle
+	State check {
+		[#
+			if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 sonar.py")
+				val reader = java.io.BufferedReader(java.io.InputStreamReader(p.getInputStream()))
+				DISTANCE = reader.readLine().toDouble()
+				if(DISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold &&
+						OLDDISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold
+				) {
+					#]
+						emit carLeftOutdoor : carLeftOutdoor(_)
+					[#
+				} else if(DISTANCE <= eu.musarellatripi.sensors.Values.sonarThreshold &&
+					OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
+				) {
+					#]
+						emit carArrivedIndoor : carArrivedIndoor(_)
+					[#
+				}
+				OLDDISTANCE = DISTANCE
+			}
+		#]
+	}
+	Goto idle
+}
+
+QActor fan context ctxsensor {
+	[# var Stato = 0; var simulate: Boolean = false; #]  //State is a reserved keyword
+	State s0 initial {
+		solve( consult("config.pl")	 )
+ 		solve( simulate(X) )
+		println( currentSolution )	//yes X / on oppure X / off
+		[# val x = getCurSol("X").toString() 
+		   simulate = ( x == "on")
+		#]
+  		println("Fan init simulate=$simulate")
+	}
+	Goto off
+  	State off {
+		println("Fan off")
+		[#
+			if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 fan.py off")
+			}
+		#]
+		updateResource [# "off" #]
+		[# Stato = 0 #]
+		discardMsg On
+	}
+	Transition t1 whenMsg startFan -> on
+	//se qui mi arriva un disable devo scartare il messaggio (o tornare a disabled, non accumularlo, altrimenti poi torna qui)
+	State on {
+		println("Fan on")
+		[#
+			if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 fan.py on")
+			}	
+		#]
+		updateResource [# "on" #]
+		[# Stato = 1 #]
+		discardMsg On //sto scartando solo i messaggi != disableAlarm e non quelli getAlarmState che magari mi arrivano contemporaneamente?
+	}
+	Transition t2 whenMsg stopFan -> off
+}
+
+QActor weight context ctxsensor {
+	[# var WEIGHT = 0; var simulate: Boolean = false; #]
+	State s0 initial {
+		solve( consult("config.pl")	 )
+ 		solve( simulate(X) )
+		println( currentSolution )	//yes X / on oppure X / off
+		[# val x = getCurSol("X").toString() 
+		   simulate = ( x == "on")
+		#]
+  		println("Weight init simulate=$simulate")
+	}
+	Goto idle
+	State idle {
+		
+	}
+	Transition t0 
+		//whenTime 20000 -> check  //events not needed
+		whenRequest getValue -> handleRequest
+		whenMsg setValue -> handleSetWeight
+  	
+	State handleRequest {
+		[#
+			if(!simulate) {
+				val p  = Runtime.getRuntime().exec("python3 weight.py")
+				val reader = java.io.BufferedReader(java.io.InputStreamReader(p.getInputStream()))
+				WEIGHT = reader.readLine().toInt()
+			}
+		#]
+		replyTo getValue with sensorValue: sensorValue($WEIGHT, weight)
+   	}
+	Goto idle
+	/*State check {
+		[# Numcheck++ #]
+		updateResource [# "check $Numcheck" #]
+
+	}
+	Goto idle*/
+	State handleSetWeight {
+		onMsg(setValue: sensorValue(WEIGHT, weight)) {
+			[#
+				if(simulate) {
+					WEIGHT = payloadArg(0).toInt()
+				}
+			#]
+		}
+	}
+	Goto idle
+}
