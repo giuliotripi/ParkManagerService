@@ -205,6 +205,7 @@
 		<ul class="requirementsList">
 			<li>Creation of a log to track action done in the system and exchanged messages (<k>F19</k>)</li>
 			<li>Automatic mechanism of log analysis (<k>F20</k>)</li>
+			<li>It should be possible to swap between real sensor and simulated mock-objects with ease (<k>NF2</k>)</li>
 		</ul>
 		<br>
 		We will also implement all the sensors which were mocked so far. At the same time, for demonstration purposes we
@@ -219,13 +220,13 @@
 	<h2>Sprint</h2>
 	<div class="remark">
 		<h3>Sensors implementation</h3>
-
+		<!-- TODO -->
 		Having used the QActors, we won't need to change the structure in the qak model. However, in order to place each
 		sensor in a different location, we will need to place each QActor in a different context.
 		When a sensor actor receives a request, it executes a shell command that will print the value to stdout. This value
 		will then be read from the actor, which will use it to reply to the getValue request.
 		<br>
-		All the sensors will be connected to a different Raspberry Pi device, a low-cost single board computer . We chose
+		All the sensors will be connected to a different Raspberry Pi device, a low-cost single board computer. We chose
 		Raspberry Pi over Arduino because the Raspberry has a built-in Wi-Fi module, and a complete operative system.
 		This allows to push updates from remote, which cannot be done on Arduino.
 		<br>
