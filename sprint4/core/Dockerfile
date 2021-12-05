@@ -13,10 +13,10 @@ WORKDIR /app/core
 #RUN ["ls", "/unibolibs"]
 #CMD ["ls", "/unibolibs"]
 
-CMD "gradle  -b build_ctxservice.gradle --console=plain --warning-mode none run"
+CMD ["gradle", "-b", "build_ctxservice.gradle", "--console=plain", "--warning-mode", "none", "run"]
 
 #in main folder:
-#docker build . -f sprint4/web/Dockerfile -t parkmanagerservice:1.0
+#docker build . -f sprint4/core/Dockerfile -t parkmanagerservice:1.0
 #docker run -p 8081:8081 --name parkmanagers --network host --rm parkmanagerservice:0.1
 #docker rm parkmanagers
 

@@ -16,9 +16,9 @@ WORKDIR /app/web
 CMD ["gradle", "bootRun"]
 
 #in main folder:
-#docker build . -f sprint4/web/Dockerfile -t parkmanagerservice:1.0
-#docker run -p 8081:8081 --name parkmanagers --network host --rm parkmanagerservice:0.1
-#docker rm parkmanagers
+#docker build . -f sprint4/web/Dockerfile -t parkmanagerservice-webapp:1.0
+#docker run -p 8081:8081 --name parkmanagersweb --network host --rm parkmanagerservice-webapp:0.1
+#docker rm parkmanagersweb
 
 #To remove old parking slot status
 #docker exec -it parkmanagers rm /app/core/status.json
