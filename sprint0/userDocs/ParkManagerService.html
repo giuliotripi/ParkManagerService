@@ -701,7 +701,7 @@
 	<h2>Test plans</h2>
 	<div class="remark">
 
-		<h3>Unit tests</h3>
+		<h3>Functional tests</h3>
 
 		The test plans listed here are done in
 		<a href="../../sprint1/test/eu/musarellatripi/test/TestPlan0.kt">TestPlan0</a> and in
@@ -800,6 +800,16 @@
 				</td>
 			</tr>
 
+			<tr>
+				<td>
+					<h4>testClientCarEnterNoSlotsFree</h4>
+					The client has received SLOTNUM equals to 0 and tries to proceed anyway. (F7)
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client cannot proceed</li>
+					</ul>
+				</td>
+			</tr>
 
 			<!-- TEST PICKUP (F9, F10, F11) -->
 
@@ -847,6 +857,19 @@
 					<br/><b>Conditions</b>
 					<ul>
 						<li>The system notifies the client the problem</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<h4>testClientWorkflow</h4>
+					This test simulates a complete workflow of a client, that receives a valid SLOTNUm and do not
+					make mistakes during the operations
+					<br/><b>Conditions</b>
+					<ul>
+						<li>The client is able to enterRequest, carEnter, pickUp without errors and with
+							the information received during the previous interaction with the service</li>
 					</ul>
 				</td>
 			</tr>
