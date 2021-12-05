@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 
 if len(sys.argv) != 2 or (sys.argv[1] != "on" and sys.argv[1] != "off"):
 	print("Usage: fan.py on|off")
+	sys.exit(1)
 
 GPIOnumber = 16
 

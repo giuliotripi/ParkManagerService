@@ -9,3 +9,5 @@ except w1thermsensor.errors.SensorNotReadyError:
 	print(21.2121)
 except w1thermsensor.errors.ResetValueError:
 	print(21.2122)
+except w1thermsensor.errors.NoSensorFoundError:
+	print(21.2123)
