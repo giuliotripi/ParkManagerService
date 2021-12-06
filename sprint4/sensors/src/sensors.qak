@@ -19,29 +19,29 @@ Dispatch setValue	: sensorValue(VALUE, SENSORNAME)
 
 Context ctxsensor ip [ host= "127.0.0.1" port= 8054]
 
-Context ctxservice ip [ host="192.168.1.130" port=8050]
+Context ctxservice ip [ host="service.local" port=8050]
 
 QActor thermometer context ctxsensor {
 	[# var TEMP = 0.0; var OLDTEMP=0.0; var simulate: Boolean = false; #]
-	State s0 initial {    
-  		 
+	State s0 initial {
+
   		solve( consult("config.pl")	 )
  		solve( simulate(X) )
 		println( currentSolution )	//yes X / on oppure X / off
-		[# val x = getCurSol("X").toString() 
+		[# val x = getCurSol("X").toString()
 		   simulate = ( x == "on")
 		#]
 		println("Thermometer init simulate=$simulate")
 	}
 	Goto check
 	State idle {
-		
+
 	}
 	Transition t0
 		whenTime 60000 -> check
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetValue
-  	
+
 	State handleRequest {
 		[#
 		   if(!simulate) {
@@ -114,20 +114,20 @@ QActor sonar context ctxsensor {
 		solve( consult("config.pl")	 )
  		solve( simulate(X) )
 		println( currentSolution )	//yes X / on oppure X / off
-		[# val x = getCurSol("X").toString() 
+		[# val x = getCurSol("X").toString()
 		   simulate = ( x == "on")
 		#]
   		println("Sonar init simulate=$simulate")
 	}
 	Goto check
 	State idle {
-		
+
 	}
 	Transition t0
 		whenTime 1000 -> check
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetValue
-  	
+
 	State handleRequest {
 		[#
 		   if(!simulate) {
@@ -196,7 +196,7 @@ QActor fan context ctxsensor {
 		solve( consult("config.pl")	 )
  		solve( simulate(X) )
 		println( currentSolution )	//yes X / on oppure X / off
-		[# val x = getCurSol("X").toString() 
+		[# val x = getCurSol("X").toString()
 		   simulate = ( x == "on")
 		#]
   		println("Fan init simulate=$simulate")
@@ -220,7 +220,7 @@ QActor fan context ctxsensor {
 		[#
 			if(!simulate) {
 				val p  = Runtime.getRuntime().exec("python3 fan.py on")
-			}	
+			}
 		#]
 		updateResource [# "on" #]
 		[# Stato = 1 #]
@@ -235,20 +235,20 @@ QActor weight context ctxsensor {
 		solve( consult("config.pl")	 )
  		solve( simulate(X) )
 		println( currentSolution )	//yes X / on oppure X / off
-		[# val x = getCurSol("X").toString() 
+		[# val x = getCurSol("X").toString()
 		   simulate = ( x == "on")
 		#]
   		println("Weight init simulate=$simulate")
 	}
 	Goto idle
 	State idle {
-		
+
 	}
-	Transition t0 
+	Transition t0
 		//whenTime 20000 -> check  //events not needed
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetWeight
-  	
+
 	State handleRequest {
 		[#
 			if(!simulate) {
