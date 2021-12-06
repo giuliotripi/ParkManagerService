@@ -265,6 +265,21 @@
 		<pre class="inline">./execute.bat mockClient</pre>
 		on Windows.
 
+		<h3>Switch between mock and real devices</h3>
+
+		In order to make it easy to switch between mock and real devices, a configuration file was created to contain
+		this information.<br>
+
+		To change this setting for the trolley, the configuration file is located in
+		<pre class="inline">sprint4/core/config.pl</pre>. The directive is <pre>simulateTrolley(off).</pre>
+		In order to simulate the trolley, it is necessary to change <k>off</k> to <k>on</k>. It is still necessary
+		to start the basicrobot context.<br><br>
+
+		To change this setting for the fan and the sensors, the configuration file is located in
+		<pre class="inline">sprint4/sensors/config.pl</pre>. The directive is <pre>simulate(off).</pre>
+		In order to simulate the fan and the sensors, it is necessary to change <k>off</k> to <k>on</k>. It is still necessary
+		to start the sensor context.
+
 		<h3>Log creation</h3>
 
 		The information that we will log are the incoming requests to the web server. Since we already decided to use docker for the
@@ -301,7 +316,24 @@
 		Finally, to start the application with a single command, it was created a <a href="../../ParkManagerService.yaml">Docker file</a>
 		with reference to the two  images, that is saved in the root folder.<br><br>
 
-		To execute it, is necessary to run the following command:
+		We assigned 3 local domain names to the components:
+		<ul>
+			<li><k>service.local</k> for the core application</li>
+			<li><k>sensor.local</k> for the Raspberry Pi</li>
+			<li><k>basicrobot.local</k> for the basicrobot</li>
+		</ul>
+
+		This way, it is only necessary to change the association with the real IP in the
+		<a href="../../ParkManagerService.yaml">ParkManagerService.yaml Docker file</a> and in the Raspberry Pi editing
+		the <pre class="inline">/etc/hosts</pre> file and adding the following line
+
+		<pre>192.168.1.100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service.local</pre>
+
+		where 192.168.1.100 is the IP address of the computer running the core application.<br>
+
+		Without this configuration, it would have been necessary to change the IP address inside the application.<br><br>
+
+		To execute the core and webserver, is necessary to run the following command:
 		<pre>docker-compose -f ParkManagerService.yaml up</pre>
 	</div>
 
@@ -329,6 +361,11 @@
 		As an alternative, always after starting the robot, it is now possible to execute the application as described in the
 		<a href="../../sprint0/userDocs/ParkManagerService.html#deployment">deployment section</a> of sprint0.
 	</div>
+
+	<div class="remark" style="background-color: white; text-align: center">
+		<a href="../../sprint0/userDocs/ParkManagerService.html">Go back to main document</a>
+	</div>
+
 
 </div>
 

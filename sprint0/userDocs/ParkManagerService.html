@@ -1034,11 +1034,21 @@
 	<h2 id="deployment">Deployment</h2>
 	<div class="remark">
 		For deployment, as explained during sprint4, we used docker. In order to start the application, it is first necessary
-		to go to the root folder and start the trolley and the basicrobot, with one of the following commands:
+		to go to the root folder and start the basicrobot, with one of the following commands:
 		<pre>docker-compose -f basicrobotVirtual.yaml up</pre>
 		for the trolley in the virtual environment or
 		<pre>docker-compose -f basicrobotMbot.yaml up</pre>
-		for a real Mbot trolley.<br>
+		for a real Mbot trolley.<br><br>
+
+		Then, it is necessary to edit <a href="../../ParkManagerService.yaml">ParkManagerService.yaml</a> and set the
+		IP address of the Raspberry Pi (<k>sensor.local</k>) and of the basicrobot (<k>basicrobot.local</k>).<br><br>
+
+		Moreover, you have to add the IP address of the core application in <code style="font-size: 15px">/etc/hosts</code>
+		on the Raspberry Pi.<br><br>
+
+		Next, it is necessary to start the sensor context on the Raspberry Pi, executing
+		<pre>gradle -b build_ctxsensor.gradle run</pre><br>
+
 		After that, to start the application it is only necessary to run the following command:
 		<pre>docker-compose -f ParkManagerService.yaml up</pre>
 		<br>
@@ -1049,7 +1059,10 @@
 	<div class="remark">
 		As for our organization for updates, exposed in a <a href="../../sprint4/userDocs/Sprint4.html#deploy">section of sprint4</a>, in order to update the project
 		in docker it is necessary to push the changes to the master branch in github. The folders with the final code that
-		have to be edited are <k>web</k>, <k>core</k> and <k>sensors</k>, located in the main folder.
+		have to be edited are <k>web</k>, <k>core</k> and <k>sensors</k>, located in the main folder.<br><br>
+
+		In order to download the updated docker images on clients computers, it is necessary to run
+		<pre>docker-compose --file ParkManagerService.yaml pull</pre>
 	</div>
 	<!-- USEFUL
 	<table style="width:100%" border="1">
