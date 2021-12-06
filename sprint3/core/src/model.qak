@@ -885,7 +885,7 @@ QActor sonar context ctxservice {
 					OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
 				) {
 					#]
-						emit carArrivedIndoor : carArrivedIndoor(_)
+						emit carArrivedOutdoor : carArrivedOutdoor(_)
 					[#
 				}
 			#]

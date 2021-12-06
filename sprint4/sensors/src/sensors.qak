@@ -155,7 +155,7 @@ QActor sonar context ctxsensor {
 						OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
 					) {
 						#]
-							emit carArrivedIndoor : carArrivedIndoor(_)
+							emit carArrivedOutdoor : carArrivedOutdoor(_)
 						[#
 					}
 					OLDDISTANCE = DISTANCE
@@ -180,7 +180,7 @@ QActor sonar context ctxsensor {
 					OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
 				) {
 					#]
-						emit carArrivedIndoor : carArrivedIndoor(_)
+						emit carArrivedOutdoor : carArrivedOutdoor(_)
 					[#
 				}
 				OLDDISTANCE = DISTANCE

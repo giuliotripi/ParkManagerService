@@ -121,11 +121,11 @@ QActor parkingservice context ctxservice {
 		whenRequest enterRequest -> handleEnterRequest1
 		whenRequest carEnter -> handleCarEnter1
 		whenRequest pickUpRequest -> handlePickUp1
-	
+
 	// ---------------------------------
 	//			handleEnterRequest
 	// ---------------------------------
-	
+
 	//ask for weight
 	State handleEnterRequest1 {
 		updateResource [# "handleEnterRequest1" #]
@@ -134,11 +134,11 @@ QActor parkingservice context ctxservice {
 	}
 	Transition t1a
 		whenReply sensorValue -> handleEnterRequest2
-		
+
 	//check weight, trolley status, find the number of the first free slot and return the number
 	State handleEnterRequest2 {
 		println("handleEnterRequest2")
-		
+
 		onMsg(sensorValue : sensorValue(WEIGHT, weight)) {
 			[#
 				SLOTNUM = 0
@@ -170,17 +170,17 @@ QActor parkingservice context ctxservice {
 						replyTo enterRequest with error : error(trolleystopped)
 					[#
 				}
-			#]	
+			#]
 		}
 		updateResource [# "handleEnterRequest2" #]
-		
+
 	}
 	Goto idle
-	
+
 	// ---------------------------------
 	//			handleEnterRequest
 	// ---------------------------------
-	
+
 	//ask for weight
 	State handleCarEnter1 {
 		onMsg(carEnter : carEnter(SLOTNUM)) {
@@ -190,16 +190,16 @@ QActor parkingservice context ctxservice {
 	}
 	Transition t2a
 		whenReply sensorValue -> handleCarEnter2
-		
+
 	//check weight, correctness of received SLOTNUM, trolley state -> mark slot occupied, generate and return token
 	State handleCarEnter2 {
 		println("In handleCarEnter")
 		onMsg(sensorValue : sensorValue(WEIGHT, weight)) {
 			[#
 			val weight = payloadArg(0).toInt()
-			
+
 			val trolleyState = Trolley.get().getResponseText()
-			
+
 			val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 			if(SLOTNUM >= 1 && SLOTNUM <= 6 && parkingState.get(SLOTNUM).reserved == true &&
 				parkingState.get(SLOTNUM).token.equals("")) {
@@ -213,8 +213,8 @@ QActor parkingservice context ctxservice {
 						  .map(charPool::get)
 						  .joinToString("");
 						TOKENID = "t" + SLOTNUM + randomString
-						
-						
+
+
 						if(parkingState.get(SLOTNUM).token.equals("")) {
 							parkingState.update(SLOTNUM, true, TOKENID)
 						}
@@ -234,7 +234,7 @@ QActor parkingservice context ctxservice {
 					Error = true
 					#]
 					replyTo carEnter with error : error(indoorempty)
-					[#	
+					[#
 				}
 			} else {
 				Error = true
@@ -247,14 +247,14 @@ QActor parkingservice context ctxservice {
 	}
 	Goto idle if [# Error #]
 		else handleCarEnter3
-		
-	//if all checks were fine in previous state, send trolley command to move, waiting for 
+
+	//if all checks were fine in previous state, send trolley command to move, waiting for
 	State handleCarEnter3 {
 		request trolley -m moveToIn : moveToIn(X)
 	}
 	Transition t2b
 		whenReply moveDone -> handleCarEnter4
-	
+
 	State handleCarEnter4 {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
 			request trolley -m moveToSlotIn : moveToSlotIn($SLOTNUM)
@@ -262,10 +262,10 @@ QActor parkingservice context ctxservice {
 	}
 	Transition t2c
 		whenReply moveDone -> handleCarEnter5
-	
+
 	State handleCarEnter5 {
 		onMsg(moveDone : moveDone(MOVE, STATUS)) {
-				
+
 		}
 	}
 	//if there are not other requests trolley return to home, otherwise fulfill requests (only carEnter and pickUp)
@@ -274,7 +274,7 @@ QActor parkingservice context ctxservice {
 		whenRequest carEnter -> handleCarEnter1
 		whenRequest pickUpRequest -> handlePickUp1
 	State handleCarEnter6 {
-		
+
 		request trolley -m backHome : backHome(X)
 	}
 	Transition t2e
@@ -283,11 +283,11 @@ QActor parkingservice context ctxservice {
 		println("[SERVICE] carEnterRequest finished")
 	}
 	Goto idle
-	
+
 	// ---------------------------------
 	//			handlePickUp
 	// ---------------------------------
-	
+
 	//ask for sonar value
 	State handlePickUp1 {
 		onMsg(pickUpRequest : pickUpRequest(TOKENID)) {
@@ -299,19 +299,19 @@ QActor parkingservice context ctxservice {
 	}
 	Transition t3a
 		whenReply sensorValue -> handlePickUp2
-		
+
 	//check sonar value, trolley state, token -> find corresponding SLOTNUM
 	State handlePickUp2 {
 		onMsg(sensorValue : sensorValue(DISTANCE, distance)) {
 			[#
 				val sonarState = payloadArg(0).toInt()
-				
+
 				val trolleyState = Trolley.get().getResponseText()
-				
+
 				SLOTNUM = -1
 				if(!trolleyState.equals("stopped")) {
 					if(sonarState > eu.musarellatripi.sensors.Values.sonarThreshold) { //if less there is already a car, so if more we can proceed
-						
+
 						val parkingState: eu.musarellatripi.domain.ParkingState = eu.musarellatripi.domain.ParkingState()
 						//val slotsCompatible = parkingState.getAll().filter {(key, value) -> value.token.equals(TOKENID)}
 						for(i in 1..6) {
@@ -344,7 +344,7 @@ QActor parkingservice context ctxservice {
 	}
 	Goto idle if [# SLOTNUM == -1 #]
 		else handlePickUp3
-	
+
 	//command trolley to take car
 	State handlePickUp3 {
 		request trolley -m moveToSlotOut : moveToSlotOut($SLOTNUM)
@@ -354,16 +354,16 @@ QActor parkingservice context ctxservice {
 	State handlePickUp4 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
 				request trolley -m moveToOut : moveToOut(X)
-				
+
 			}
 	}
 	Transition t3c
 		whenReply moveDone -> handlePickUp5
 	State handlePickUp5 {
 		onMsg(moveDone: moveDone(MOVE, RESULT)) {
-			
+
 			replyTo pickUpRequest with pickUpReply : pickUpReply(ok)
-			
+
 			forward dtfree -m startTimer : startTimer(X)
 		}
 	}
@@ -385,7 +385,7 @@ QActor parkingservice context ctxservice {
 
 QActor sensorservice context ctxservice {
 	State s0 initial {
-		
+
 	}
 	Transition t1
 		whenEvent underTMAX -> tempLow
@@ -411,7 +411,7 @@ QActor managerservice context ctxservice {
 		ParkingDevicesStatus.sensors.put("temperature", eu.musarellatripi.SensorMeasure(0.0F, 0, "temperature"))
 	#]
 	State s0 initial {
-		
+
 	}
 	Goto idle //waits for all actors to initialize before requesting their status
 	State idle {
@@ -424,14 +424,14 @@ QActor managerservice context ctxservice {
 		whenEvent timeout -> dtFreeTimeout
 		whenEvent carLeftOutdoor -> resetAlarmOutdoor
 		whenRequest readStatus -> update
-	
+
 	//I ask for temperature before performing operation
 	State handleStopTrolley1 {
 		request thermometer -m getValue : getValue(_)
 	}
 	Transition t1
 		whenReply sensorValue -> handleStopTrolley2
-		
+
 	//if temperature is above TMAX I forward the command to the trolley actor
 	State handleStopTrolley2 {
 		onMsg(sensorValue : sensorValue(TEMPERATURE, temperature)) {
@@ -452,7 +452,7 @@ QActor managerservice context ctxservice {
 		}
 	}
 	Goto update
-	
+
 	State handleResumeTrolley {
 		forward trolley -m resumeTrolley : resumeTrolley(_)
 		replyTo resumeTrolley with ok : ok(_)
@@ -463,11 +463,11 @@ QActor managerservice context ctxservice {
 			[#
 				val value = payloadArg(0).toFloat()
 				val sensor = payloadArg(1)
-				
+
 				ParkingDevicesStatus.sensors.get(sensor)?.measure = value
 				ParkingDevicesStatus.sensors.get(sensor)?.time = (System.currentTimeMillis()/1000).toInt()
 				val STATUS = Gson.toJson(ParkingDevicesStatus)
-				
+
 			#]
 			replyTo readStatus with parkStatus : parkStatus($STATUS)
 		}
@@ -478,7 +478,7 @@ QActor managerservice context ctxservice {
 		[#
 			val trolleyState = Trolley.get().getResponseText().toUpperCase()
 			val fanState = Fan.get().getResponseText().toUpperCase()
-			
+
 			try {
 				ParkingDevicesStatus.trolleyState = eu.musarellatripi.TrolleyState.valueOf(trolleyState)
 				ParkingDevicesStatus.fanState = eu.musarellatripi.FanState.valueOf(fanState)
@@ -543,7 +543,7 @@ QActor client context ctxservice { // TODO: ctxclient
 	Transition t3
 		whenReply pickUpReply -> pickUp
 	State pickUp {
-		
+
 		println("[CLIENT] CAR PICKED UP")
 	}
 }
@@ -554,7 +554,7 @@ QActor manager context ctxservice { // TODO: ctxmanager
 	}
 	Transition t0
 		whenEvent timeout -> timeout
-	
+
 	State timeout {
 		println("TIMEOUT")
 	}
@@ -569,7 +569,7 @@ QActor trolley context ctxservice { //TODO: ctxtrolley
 		var State = "idle"
 	#]
 	State s0 initial {
-		
+
 	}
 	Goto idle
 	State idle {
@@ -659,12 +659,12 @@ QActor trolley context ctxservice { //TODO: ctxtrolley
 
 QActor dtfree context ctxservice {
 	State idle initial {
-		
+
 	}
 	Transition t0
 		whenMsg startTimer -> timing
 	State timing {
-		
+
 	}
 	Transition t1 whenTime 60000 -> timeout
 		whenMsg stopTimer -> idle
@@ -681,17 +681,17 @@ QActor dtfree context ctxservice {
 
 QActor thermometer context ctxservice {
 	[# var TEMP = 0; var OLDTEMP=0; #]
-	State s0 initial {    
+	State s0 initial {
   		 println("Thermometer init")
 	}
 	Goto idle
 	State idle {
-		
+
 	}
-	Transition t0 
+	Transition t0
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetValue
-  	
+
 	State handleRequest {
 		replyTo getValue with sensorValue : sensorValue($TEMP, temperature)
    	}
@@ -723,17 +723,17 @@ QActor thermometer context ctxservice {
 
 QActor sonar context ctxservice {
 	[# var DISTANCE = 0; var OLDDISTANCE = 0; #]
-	State s0 initial {    
+	State s0 initial {
   		 println("Sonar init")
 	}
 	Goto idle
 	State idle {
-		
+
 	}
-	Transition t0 
+	Transition t0
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetValue
-  	
+
 	State handleRequest {
 		replyTo getValue with sensorValue : sensorValue($DISTANCE, distance)
    	}
@@ -753,7 +753,7 @@ QActor sonar context ctxservice {
 					OLDDISTANCE > eu.musarellatripi.sensors.Values.sonarThreshold
 				) {
 					#]
-						emit carArrivedIndoor : carArrivedIndoor(_)
+						emit carArrivedOutdoor : carArrivedOutdoor(_)
 					[#
 				}
 			#]
@@ -764,7 +764,7 @@ QActor sonar context ctxservice {
 
 QActor fan context ctxservice {
 	[# var Stato = 0 #]  //State is a reserved keyword
-	State s0 initial {    
+	State s0 initial {
   		 println("Fan init")
 	}
 	Goto off
@@ -787,20 +787,20 @@ QActor fan context ctxservice {
 
 QActor weight context ctxservice {
 	[# var Numcheck = 0; var WEIGHT = 0 #]
-	State s0 initial {    
+	State s0 initial {
   		 println("Weight init")
   		 //request weight -m getValue : getValue(_)
   		 updateResource [# "init" #]
 	}
 	Goto idle
 	State idle {
-		
+
 	}
-	Transition t0 
+	Transition t0
 		whenTime 20000 -> check
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetWeight
-  	
+
 	State handleRequest {
 		//printCurrentMessage
 		replyTo getValue with sensorValue: sensorValue($WEIGHT, weight)
