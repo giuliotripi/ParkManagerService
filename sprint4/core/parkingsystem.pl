@@ -1,9 +1,9 @@
 %====================================================================================
-% parkingsystem description   
+% parkingsystem description
 %====================================================================================
 context(ctxservice, "localhost",  "TCP", "8050").
 context(ctxsensor, "sensor.local",  "TCP", "8054").
-context(ctxbasicrobot, "127.0.0.1",  "TCP", "8020").
+context(ctxbasicrobot, "basicrobot.local",  "TCP", "8020").
  qactor( basicrobot, ctxbasicrobot, "external").
   qactor( thermometer, ctxsensor, "external").
   qactor( sonar, ctxsensor, "external").

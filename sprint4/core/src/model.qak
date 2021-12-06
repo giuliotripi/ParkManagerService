@@ -105,7 +105,7 @@ Context ctxservice ip [ host= "localhost" port= 8050 ]
 
 Context ctxsensor ip [ host= "sensor.local" port= 8054]  //192.168.1.217
 
-Context ctxbasicrobot ip [host="127.0.0.1" port=8020]
+Context ctxbasicrobot ip [host="basicrobot.local" port=8020]
 
 ExternalQActor basicrobot context ctxbasicrobot
 

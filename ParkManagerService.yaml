@@ -5,6 +5,7 @@ services:
     network_mode: host
     extra_hosts:
       - "sensors.local:192.168.1.217"
+      - "basicrobot.local:127.0.0.1"
   webapp:
     image: docker.io/giuliotripi/parkmanagerservice-webapp:github-1.0
     ##image: basicrobot21virtual:1.0
