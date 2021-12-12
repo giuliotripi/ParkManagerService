@@ -33,27 +33,29 @@ class WebappApplicationTests(@Autowired val restTemplate: TestRestTemplate) {
 	fun clientRequests() {
 		val entity = restTemplate.postForEntity<String>("/api/enterRequest")
 		//assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
+		TestUtils.setWeight(0)
 		assertThat(entity.body).contains("SLOTNUM") //can check HTML code
 		val SLOTNUM = Gson().fromJson(entity.body, EnterRequestResponse::class.java).SLOTNUM;
-
+		println(entity.body)
 		println("SLOTNUM: $SLOTNUM")
 		val map: MultiValueMap<String, String> = LinkedMultiValueMap()
 		map.add("SLOTNUM", SLOTNUM.toString())
 		val request = HttpEntity(map, HttpHeaders())
-
+		TestUtils.setWeight(Values.weightThreshold+10)
 		val entity2 = restTemplate.postForEntity<String>("/api/carEnter", request)
 		//assertThat(entity2.statusCode).isEqualTo(HttpStatus.OK)
 		//assertThat(entity2.body).contains("TOKENID")
-
+		println(entity2.body)
 		val TOKENID = Gson().fromJson(entity2.body, CarEnterResponse::class.java).TOKENID;
 		println("TOKENID: $TOKENID")
 
 		val map2: MultiValueMap<String, String> = LinkedMultiValueMap()
 		map2.add("TOKENID", TOKENID)
 		val request2 = HttpEntity(map2, HttpHeaders())
-
+		TestUtils.setSonar(Values.sonarThreshold + 10)
 		val entity3 = restTemplate.postForEntity<String>("/api/pickUp", request2)
 		//assertThat(entity3.statusCode).isEqualTo(HttpStatus.OK)
+		println(entity3.body)
 		assertThat(entity3.body).contains("true")
 	}
 	@Test

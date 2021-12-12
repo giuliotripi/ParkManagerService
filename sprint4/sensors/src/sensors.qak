@@ -38,7 +38,7 @@ QActor thermometer context ctxsensor {
 
 	}
 	Transition t0
-		whenTime 60000 -> check
+		whenTime 1000 -> check
 		whenRequest getValue -> handleRequest
 		whenMsg setValue -> handleSetValue
 
